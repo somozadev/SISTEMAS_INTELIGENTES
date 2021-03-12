@@ -1,7 +1,25 @@
+import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 from nltk.stem.snowball import SnowballStemmer
+
+def lectura():
+    values=[]
+    df = pd.read_excel('tweets.xlsx', sheet_name='Search Twitter')
+    for i in df.index:
+        values.append(df['Text'][i])
+    return values
+
+def tokenizado(testStringArray):
+    arrayTokenizado=[]
+    for i in testStringArray:
+        aux = word_tokenize(i, language="Spanish")
+        arrayTokenizado.append(aux)
+        print(aux)
+    return arrayTokenizado
+
+
 
 def LowerNTokenize(baseString):
     i = 0
@@ -19,13 +37,12 @@ def Stemmer(tokenized_text):
     return stemmed_txt
 
 class main():
-    
-    testString = "Este es un texto de prueba para tokenizarlo"
-    baseString = word_tokenize(testString,language="Spanish")
-    baseString = LowerNTokenize(baseString)
-    print(baseString)
+    baseArray=lectura()
+    arrayTokenizado= tokenizado(baseArray)
+    #baseString = LowerNTokenize(baseString)
+    #print(baseString)
 
     
-    tokenizedString = Stemmer(baseString)
+    #tokenizedString = Stemmer(baseString)
 
 
