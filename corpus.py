@@ -1,3 +1,4 @@
+from numpy import nan
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
@@ -6,24 +7,20 @@ from nltk.probability import FreqDist
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 
-
-#En este bloque se crea la matriz TF-IDF con los stopwords de español
-stop_es=stopwords.words('spanish')
-tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2', encoding='latin-1', ngram_range=(1, 2), stop_words=stop_es)
-features = tfidf.fit_transform(df.content).toarray()
-labels = df.category_id
-features.shape
+import re 
+# En este bloque se crea la matriz TF-IDF con los stopwords de español
 
 
 def lectura():
-    values=[]
+    values = []
     df = pd.read_excel('tweets.xlsx', sheet_name='Search Twitter')
     for i in df.index:
         values.append(df['Text'][i])
     return values
 
+
 def tokenizado(testStringArray):
-    arrayTokenizado=[]
+    arrayTokenizado = []
     for i in testStringArray:
         aux = word_tokenize(i, language="Spanish")
         arrayTokenizado.append(aux)
@@ -31,29 +28,51 @@ def tokenizado(testStringArray):
     return arrayTokenizado
 
 
-
+# sets every word to .lower in the [][] array
 def LowerNTokenize(baseString):
-    i = 0
+
     newBaseString = baseString
-    for word in baseString:
-        word = word.lower()
-        newBaseString[i] = word 
-        i = i+1
+    for i in range(len(newBaseString)):
+        for j in range(len(newBaseString[i])):
+            newBaseString[i][j] = newBaseString[i][j].lower()
+    print(newBaseString)
     return newBaseString
 
+
 def Stemmer(tokenized_text):
+    result_txt = [[]]
     stemmer = SnowballStemmer('spanish')
-    stemmed_txt = [stemmer.stem(i) for i in tokenized_text]
-    print(stemmed_txt)
-    return stemmed_txt
+    for k in range(len(tokenized_text)):
+        stemmed_txt = [stemmer.stem(i) for i in tokenized_text[k]]
+        result_txt.append(stemmed_txt)
+
+    print(result_txt)
+    return result_txt
+
+
+def Criba(text):
+
+    for i in range(len(text)):
+        for j in range(len(text[i])):
+            text[i][j] = re.findall(r"[\w']+",text[i][j])
+            
+    text = filter(None,text)
+
+    print(text)
+    return text
+    #stop_es = stopwords.words('spanish')
+    #tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2',
+    #                        encoding='latin-1', ngram_range=(1, 2), stop_words=stop_es)
+    #features = tfidf.fit_transform(df.content).toarray()
+    #labels = df.category_id
+    #features.shape
+
 
 class main():
-    baseArray=lectura()
-    arrayTokenizado= tokenizado(baseArray)
-    #baseString = LowerNTokenize(baseString)
-    #print(baseString)
-
-    
-    #tokenizedString = Stemmer(baseString)
-
-
+    baseArray = lectura()
+    print(baseArray)
+    tokenizedArray = tokenizado(baseArray)
+    lowerArray = LowerNTokenize(tokenizedArray)
+    stemmedString = Stemmer(lowerArray)
+    s = Criba(stemmedString)
+    # todo : cribar mierda, y pesos tfidf
