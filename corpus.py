@@ -1,6 +1,7 @@
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.probability import FreqDist
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
