@@ -3,6 +3,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 from nltk.stem.snowball import SnowballStemmer
+from nltk.corpus import stopwords
 
 
 #En este bloque se crea la matriz TF-IDF con los stopwords de español
