@@ -4,6 +4,15 @@ from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 from nltk.stem.snowball import SnowballStemmer
 
+
+#En este bloque se crea la matriz TF-IDF con los stopwords de español
+stop_es=stopwords.words('spanish')
+tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2', encoding='latin-1', ngram_range=(1, 2), stop_words=stop_es)
+
+features = tfidf.fit_transform(df.content).toarray()
+labels = df.category_id
+features.shape
+
 def lectura():
     values=[]
     df = pd.read_excel('tweets.xlsx', sheet_name='Search Twitter')
