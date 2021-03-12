@@ -13,6 +13,7 @@ features = tfidf.fit_transform(df.content).toarray()
 labels = df.category_id
 features.shape
 
+
 def lectura():
     values=[]
     df = pd.read_excel('tweets.xlsx', sheet_name='Search Twitter')
