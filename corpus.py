@@ -1,4 +1,4 @@
-from numpy import nan
+from numpy import empty, nan
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
@@ -7,7 +7,7 @@ from nltk.probability import FreqDist
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 
-import re 
+import re
 # En este bloque se crea la matriz TF-IDF con los stopwords de español
 
 
@@ -51,21 +51,22 @@ def Stemmer(tokenized_text):
 
 
 def Criba(text):
-
+    aux = [[]]
     for i in range(len(text)):
-        for j in range(len(text[i])):
-            text[i][j] = re.findall(r"[\w']+",text[i][j])
-            
-    text = filter(None,text)
-
-    print(text)
-    return text
+         for j in range(len(text[i])):
+             text[i][j] = re.findall(r"[\w']+", text[i][j])
+ 
+  
+    #aux = filter(None,text)
+    aux = [x for x in text if x != []]
+    print(aux)
+    return aux
     #stop_es = stopwords.words('spanish')
-    #tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2',
+    # tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2',
     #                        encoding='latin-1', ngram_range=(1, 2), stop_words=stop_es)
     #features = tfidf.fit_transform(df.content).toarray()
     #labels = df.category_id
-    #features.shape
+    # features.shape
 
 
 class main():
