@@ -89,11 +89,18 @@ def FreqMatrix(text):
             # freq_matrix[text[i[:15]]] = freq_table
             # print("fmatrix" + freq_matrix)
 
-
+#return total number of documents
+def GetNumberOfDocs(text):
+    number = 0
+    for i in range(len(text)):
+        number += 1
+    
+    return number
 
 
 class main():
     baseArray = lectura()
+    numberOfDocs = GetNumberOfDocs(baseArray)
     # print(baseArray)
     tokenizedArray = tokenizado(baseArray)
     # print(tokenizedArray)
