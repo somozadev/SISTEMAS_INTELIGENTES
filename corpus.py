@@ -1,5 +1,6 @@
 import pandas as pd
 import nltk
+nltk.download('stopwords')
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.probability import FreqDist
@@ -71,9 +72,8 @@ def NoEmpty(text):
     # features.shape
 
 def FreqMatrix(text):
-    
     stop_es = stopwords.words('spanish')
-    freq_matrix = {}
+    freq_matrix = [[]for y in range(GetNumberOfDocs(text))]
     for i in range(len(text)):
         for word in text[i]:
             freq_table = {}
@@ -84,9 +84,9 @@ def FreqMatrix(text):
                     freq_table[word] += 1
                 else:
                     freq_table[word] = 1
-            print(freq_table)
-        
-            # freq_matrix[text[i[:15]]] = freq_table
+            freq_matrix[i].append(freq_table)
+            
+    print(freq_matrix)        
             # print("fmatrix" + freq_matrix)
 
 #return total number of documents
@@ -97,6 +97,12 @@ def GetNumberOfDocs(text):
     
     return number
 
+def getNumberofWords(text):
+    cont=0
+    for i in range(len(text)):
+        for word in text[i]:
+            cont +=1
+    return cont
 
 class main():
     baseArray = lectura()
