@@ -1,4 +1,3 @@
-from numpy import empty, nan
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
@@ -6,7 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.probability import FreqDist
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
-
+# textplob? >> replace
 import re
 # En este bloque se crea la matriz TF-IDF con los stopwords de español
 
@@ -24,7 +23,7 @@ def tokenizado(testStringArray):
     for i in testStringArray:
         aux = word_tokenize(i, language="Spanish")
         arrayTokenizado.append(aux)
-        print(aux)
+        # print(aux)
     return arrayTokenizado
 
 
@@ -35,7 +34,7 @@ def LowerNTokenize(baseString):
     for i in range(len(newBaseString)):
         for j in range(len(newBaseString[i])):
             newBaseString[i][j] = newBaseString[i][j].lower()
-    print(newBaseString)
+    # print(newBaseString)
     return newBaseString
 
 
@@ -46,34 +45,64 @@ def Stemmer(tokenized_text):
         stemmed_txt = [stemmer.stem(i) for i in tokenized_text[k]]
         result_txt.append(stemmed_txt)
 
-    print(result_txt)
+    # print(result_txt)
     return result_txt
 
-
-def Criba(text):
-    aux = [[]]
+#limpia los espacios en blanco 
+def NoEmpty(text):
+    nuevo_texto = [[]]
     for i in range(len(text)):
-         for j in range(len(text[i])):
-             text[i][j] = re.findall(r"[\w']+", text[i][j])
+        for j in range(len(text[i])):
+            text[i][j] = re.sub("[^A-Za-z0-9]", '', text[i][j])
+        
+        nuevo_texto.append(text[i])    # text[i][j] = re.findall( ' ', text[i][j])
  
-  
-    #aux = filter(None,text)
-    aux = [x for x in text if x != []]
-    print(aux)
-    return aux
-    #stop_es = stopwords.words('spanish')
+
+    for i in range(len(text)):        
+        nuevo_texto[i] = list(filter(None, text[i]))
+
+    return nuevo_texto
+
+    # stop_es = stopwords.words('spanish')
     # tfidf = TfidfVectorizer(sublinear_tf=True, min_df=5, norm='l2',
     #                        encoding='latin-1', ngram_range=(1, 2), stop_words=stop_es)
-    #features = tfidf.fit_transform(df.content).toarray()
-    #labels = df.category_id
+    # features = tfidf.fit_transform(df.content).toarray()
+    # labels = df.category_id
     # features.shape
+
+def FreqMatrix(text):
+    
+    stop_es = stopwords.words('spanish')
+    freq_matrix = {}
+    for i in range(len(text)):
+        for word in text[i]:
+            freq_table = {}
+            for stopword in stop_es:
+                if word in stopword:
+                    continue
+                if word in freq_table:
+                    freq_table[word] += 1
+                else:
+                    freq_table[word] = 1
+            print(freq_table)
+        
+            # freq_matrix[text[i[:15]]] = freq_table
+            # print("fmatrix" + freq_matrix)
+
+
 
 
 class main():
     baseArray = lectura()
-    print(baseArray)
+    # print(baseArray)
     tokenizedArray = tokenizado(baseArray)
+    # print(tokenizedArray)
     lowerArray = LowerNTokenize(tokenizedArray)
+    # print(lowerArray)
     stemmedString = Stemmer(lowerArray)
-    s = Criba(stemmedString)
-    # todo : cribar mierda, y pesos tfidf
+    # print(stemmedString)
+    noemptyslotsString = NoEmpty(stemmedString)
+    # print(noemptyslotsString)
+    FreqMatrix(noemptyslotsString)
+
+    # todo : cribar mierda, y pesos tfidf + similitud coseno (select top 5 >> analisis de sentimientos)
