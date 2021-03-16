@@ -102,14 +102,15 @@ def CalculateTF(text, matrix):
                 tf = float(int(count)/totalNumber)
                 # print("tf:" + str(tf))
                 tf_list[i].append(tf)
+    print(tf_list)
     return tf_list
 
+#numero de documentos en los que aparece la palabra
 def FreqRelativeMatrix(text):
     # stop_es = stopwords.words('spanish')
-    freq_matrix = []
+    freq_matrix = [[]for y in range(GetNumberOfDocs(text))]
     freq_table = {}
-    for i in range(len(text)):
-        
+    for i in range(len(text)):       
         aux_table=[]
         for word in text[i]:
             if word not in freq_table and word not in aux_table:
@@ -118,10 +119,9 @@ def FreqRelativeMatrix(text):
             elif word in freq_table and word not in aux_table:
                 freq_table[word] +=1
                 aux_table.append(word)
-            else:
-                continue
-    freq_matrix.append(freq_table)
-    print(GetNumberOfDocs(text))
+    for i in range(len(text)):
+        freq_matrix[i].append(freq_table)
+
     print(freq_matrix)
         # print(str(freq_matrix))
     return(freq_matrix)
@@ -135,15 +135,22 @@ def CalculateIDF(text, matrix):
     for i in range(len(text)):
         totalNumber = GetNumberOfDocs(text)
         for j in range(len(matrix[i])):
+            print("ciao")
             for word, count in (matrix[i][j]).items():
                 print(word + "/ with count of " + str(count) +
                       " in total of " + str(totalNumber) + " words")
                 # tf de cada palabra en su [][X] correspondiente
                 idf = float(totalNumber / int(count))
-                print("idf:" + str(idf))
-                idf_list[i].append(tdf)
+                
+                idf_list[i].append(idf)
+    
     return idf_list
 
+def tfIdf(tf, idf):
+    print(len(tf))
+    print(len(idf))
+    
+    
 # return total number of documents
 def GetNumberOfDocs(text):
     number = 0
@@ -179,8 +186,8 @@ class main():
 
     freqRelMatrix= FreqRelativeMatrix(noemptyslotsString)
     # print(tfList)
-     CalculateIDF(noemptyslotsString, freqRelMatrix)
-
+    idfList =CalculateIDF(noemptyslotsString, freqRelMatrix)
+    tfIdf(tfList,idfList)
     # todo : cribar mierda DONE
     # todo : freq DONE
     # todo : tfidf
