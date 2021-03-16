@@ -5,6 +5,7 @@ from nltk.probability import FreqDist
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 import pandas as pd
+import math
 import nltk
 nltk.download('stopwords')
 # textplob? >> replace
@@ -74,6 +75,8 @@ def NoEmpty(text):
     # features.shape
 
 # ahora devuelve el conteo de palabras por documento individualmente (quité el stopword porque juraria que en el stemmer ya lo hacemos)
+
+
 def FreqTotalMatrix(text):
     # stop_es = stopwords.words('spanish')
     freq_matrix = [[]for y in range(GetNumberOfDocs(text))]
@@ -89,68 +92,68 @@ def FreqTotalMatrix(text):
         # print(str(freq_matrix))
     return(freq_matrix)
 
+# numero de documentos en los que aparece la palabra
+
+
+def FreqRelativeMatrix(text):
+    # stop_es = stopwords.words('spanish')
+
+    freq_table = {}
+    for i in range(len(text)):
+        aux_table = {}
+        for word in text[i]:
+            if word not in freq_table and word not in aux_table:
+                freq_table[word] = 1
+                aux_table[word] = 1
+            elif word in freq_table and word not in aux_table:
+                freq_table[word] += 1
+                aux_table[word] = 1
+
+    # print(freq_table)
+    return(freq_table)
+
 
 def CalculateTF(text, matrix):
     tf_list = [[]for y in range(GetNumberOfDocs(text))]
     for i in range(len(text)):
         totalNumber = len(text[i])
+        word_n_tf = {}
         for j in range(len(matrix[i])):
             for word, count in (matrix[i][j]).items():
                 print(word + "/ with count of " + str(count) +
                       " in total of " + str(totalNumber) + " words")
                 # tf de cada palabra en su [][X] correspondiente
                 tf = float(int(count)/totalNumber)
+                word_n_tf[word] = tf
                 # print("tf:" + str(tf))
-                tf_list[i].append(tf)
+                tf_list[i].append(word_n_tf)
     print(tf_list)
     return tf_list
 
-#numero de documentos en los que aparece la palabra
-def FreqRelativeMatrix(text):
-    # stop_es = stopwords.words('spanish')
-    freq_matrix = [[]for y in range(GetNumberOfDocs(text))]
-    freq_table = {}
-    for i in range(len(text)):       
-        aux_table=[]
-        for word in text[i]:
-            if word not in freq_table and word not in aux_table:
-                freq_table[word] = 1
-                aux_table.append(word)
-            elif word in freq_table and word not in aux_table:
-                freq_table[word] +=1
-                aux_table.append(word)
+
+def CalculateIDF(text, dictionary):
+    word_n_idf = {}
+    totalNumber = GetNumberOfDocs(text)
+
     for i in range(len(text)):
-        freq_matrix[i].append(freq_table)
+        for j in range(len(text[i])):
+            for key in dictionary.keys():
+                if str(text[i][j]) is key:
+                    print(str(text[i][j]) + str(dictionary[key]))
+                    idf = math.log(float(totalNumber / dictionary[key]))
+                    word_n_idf[key] = idf
 
-    print(freq_matrix)
-        # print(str(freq_matrix))
-    return(freq_matrix)
+    print(word_n_idf)
+    return word_n_idf
 
-#este está sin acabar. hay que pasar otra matrix diferente, donde se calcule
-#en el numero documentos([[x],[],[],...]) que aparece una palabra. que tenga la 
-#misma estructura que la sacada en FreqTotalMatrix lo agilizará todo
 
-def CalculateIDF(text, matrix):
-    idf_list = [[]for y in range(GetNumberOfDocs(text))]
-    for i in range(len(text)):
-        totalNumber = GetNumberOfDocs(text)
-        for j in range(len(matrix[i])):
-            print("ciao")
-            for word, count in (matrix[i][j]).items():
-                print(word + "/ with count of " + str(count) +
-                      " in total of " + str(totalNumber) + " words")
-                # tf de cada palabra en su [][X] correspondiente
-                idf = float(totalNumber / int(count))
-                
-                idf_list[i].append(idf)
-    
-    return idf_list
+def tfIdf(tf_list, idf_list):
 
-def tfIdf(tf, idf):
-    print(len(tf))
-    print(len(idf))
-    
-    
+    tfidf_list = [[] for y in range(GetNumberOfDocs(tf_list))]
+    for i in range(len(tf_list)):
+        pass
+
+
 # return total number of documents
 def GetNumberOfDocs(text):
     number = 0
@@ -180,14 +183,15 @@ class main():
     # print(stemmedString)
     noemptyslotsString = NoEmpty(stemmedString)
     # print(noemptyslotsString)
-    matrixFreqString = FreqTotalMatrix(noemptyslotsString)
+    # matrixFreqString = FreqTotalMatrix(noemptyslotsString)
     # print(matrixFreqString)
-    tfList = CalculateTF(noemptyslotsString, matrixFreqString)
+    # tfList = CalculateTF(noemptyslotsString, matrixFreqString)
 
-    freqRelMatrix= FreqRelativeMatrix(noemptyslotsString)
+    freqRelMatrix = FreqRelativeMatrix(noemptyslotsString)
     # print(tfList)
-    idfList =CalculateIDF(noemptyslotsString, freqRelMatrix)
-    tfIdf(tfList,idfList)
+    idfList = CalculateIDF(noemptyslotsString, freqRelMatrix)
+    # tfIdf(tfList, idfList)
+
     # todo : cribar mierda DONE
     # todo : freq DONE
     # todo : tfidf
