@@ -1,12 +1,12 @@
 import re
+import pandas as pd
+import math
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from nltk.probability import FreqDist
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
-import pandas as pd
-import math
-import nltk
 nltk.download('stopwords')
 # textplob? >> replace
 # En este bloque se crea la matriz TF-IDF con los stopwords de español
@@ -31,7 +31,6 @@ def tokenizado(testStringArray):
 
 # sets every word to .lower in the [][] array
 def LowerNTokenize(baseString):
-
     newBaseString = baseString
     for i in range(len(newBaseString)):
         for j in range(len(newBaseString[i])):
@@ -46,7 +45,6 @@ def Stemmer(tokenized_text):
     for k in range(len(tokenized_text)):
         stemmed_txt = [stemmer.stem(i) for i in tokenized_text[k]]
         result_txt.append(stemmed_txt)
-
     # print(result_txt)
     return result_txt
 
@@ -58,7 +56,6 @@ def NoEmpty(text):
     for i in range(len(text)):
         for j in range(len(text[i])):
             text[i][j] = re.sub("[^A-Za-z0-9]", '', text[i][j])
-
         # text[i][j] = re.findall( ' ', text[i][j])
         nuevo_texto.append(text[i])
 
@@ -97,7 +94,6 @@ def FreqTotalMatrix(text):
 
 def FreqRelativeMatrix(text):
     # stop_es = stopwords.words('spanish')
-
     freq_table = {}
     for i in range(len(text)):
         aux_table = {}
@@ -108,15 +104,14 @@ def FreqRelativeMatrix(text):
             elif word in freq_table and word not in aux_table:
                 freq_table[word] += 1
                 aux_table[word] = 1
-
     # print(freq_table)
     return(freq_table)
 
 
 def CalculateTF(text, matrix):
     tf_list = [[]for y in range(GetNumberOfDocs(text))]
-    for i in range(len(text)):
-        totalNumber = len(text[i])
+    for i in range(len(matrix)):
+        totalNumber = len(matrix[i])
         word_n_tf = {}
         for j in range(len(matrix[i])):
             for word, count in (matrix[i][j]).items():
@@ -129,7 +124,6 @@ def CalculateTF(text, matrix):
         tf_list[i].append(word_n_tf)
     print(tf_list)
     return tf_list
-
 
 def CalculateIDF(text, dictionary):
     word_n_idf = {}
@@ -163,14 +157,25 @@ def tfIdf(tf_list, idf_list):
     print(tfidf_list)
     return tfidf_list
 
-def vectorizer(tfidf_list):
-    vectorizer = TfidfVectorizer()
-    vectors = vectorizer.fit_transform(tfidf_list)
-    feature_names = vectorizer.get_feature_names()
-    dense = vectors.todense()
-    denselist = dense.tolist()
-    df = pd.DataFrame(denselist, columns=feature_names)
-    print(df)
+
+
+def vectorizer(tfidf_list, dictionary):
+    palabras = {}
+    
+    key_list = list(dictionary.keys())
+    #print(dictionary)
+    for i in range (len(dictionary)):
+        valor = []
+        for tweet in range (len(tfidf_list)):
+            for elemento in range (len(tfidf_list[tweet])):
+                for word, count in (tfidf_list[tweet]).items():   
+                    if(key_list[i] == word):
+                        valor.append(count)
+                    else:
+                        valor.append(0)
+        print(len(valor))
+        palabras[key_list[i]] = valor
+    #print(palabras)
 # return total number of documents
 def GetNumberOfDocs(text):
     number = 0
@@ -201,15 +206,15 @@ class main():
     noemptyslotsString = NoEmpty(stemmedString)
     # print(noemptyslotsString)
     matrixFreqString = FreqTotalMatrix(noemptyslotsString)
-    # print(matrixFreqString)
+    print(matrixFreqString)
     tfList = CalculateTF(noemptyslotsString, matrixFreqString)
     print(tfList)
     freqRelMatrix = FreqRelativeMatrix(noemptyslotsString)
     print(freqRelMatrix)
     idfList = CalculateIDF(noemptyslotsString, freqRelMatrix)
-    print(idfList)
+    #print(idfList)
     tfidf_list = tfIdf(tfList, idfList)
-    vectorizer(tfidf_list)
+    vectorizer(tfidf_list,freqRelMatrix)
 
     # todo : cribar mierda DONE
     # todo : freq DONE
