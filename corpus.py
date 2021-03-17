@@ -126,7 +126,7 @@ def CalculateTF(text, matrix):
                 tf = float(int(count)/totalNumber)
                 word_n_tf[word] = tf
                 # print("tf:" + str(tf))
-                tf_list[i].append(word_n_tf)
+        tf_list[i].append(word_n_tf)
     print(tf_list)
     return tf_list
 
@@ -148,12 +148,29 @@ def CalculateIDF(text, dictionary):
 
 
 def tfIdf(tf_list, idf_list):
-
     tfidf_list = [[] for y in range(GetNumberOfDocs(tf_list))]
     for i in range(len(tf_list)):
-        pass
+        for j in range(len(tf_list[i])):
+            word_n_tfidf = {}
+            for word, count in (tf_list[i][j]).items():
+                for key in idf_list.keys():
+                    if str(word) is key:
+                        print("aqui seguro que no llego porque no se por que")
+                        tfidfvalue = float(count*idf_list[key])
+                        print(tfidfvalue)
+                        word_n_tfidf[key] = tfidfvalue 
+        tfidf_list[i].append(word_n_tfidf)
+    print(tfidf_list)
+    return tfidf_list
 
-
+def vectorizer(tfidf_list):
+    vectorizer = TfidfVectorizer()
+    vectors = vectorizer.fit_transform(tfidf_list)
+    feature_names = vectorizer.get_feature_names()
+    dense = vectors.todense()
+    denselist = dense.tolist()
+    df = pd.DataFrame(denselist, columns=feature_names)
+    print(df)
 # return total number of documents
 def GetNumberOfDocs(text):
     number = 0
@@ -183,14 +200,16 @@ class main():
     # print(stemmedString)
     noemptyslotsString = NoEmpty(stemmedString)
     # print(noemptyslotsString)
-    # matrixFreqString = FreqTotalMatrix(noemptyslotsString)
+    matrixFreqString = FreqTotalMatrix(noemptyslotsString)
     # print(matrixFreqString)
-    # tfList = CalculateTF(noemptyslotsString, matrixFreqString)
-
+    tfList = CalculateTF(noemptyslotsString, matrixFreqString)
+    print(tfList)
     freqRelMatrix = FreqRelativeMatrix(noemptyslotsString)
-    # print(tfList)
+    print(freqRelMatrix)
     idfList = CalculateIDF(noemptyslotsString, freqRelMatrix)
-    # tfIdf(tfList, idfList)
+    print(idfList)
+    tfidf_list = tfIdf(tfList, idfList)
+    vectorizer(tfidf_list)
 
     # todo : cribar mierda DONE
     # todo : freq DONE
