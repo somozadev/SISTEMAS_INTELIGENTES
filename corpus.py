@@ -54,11 +54,23 @@ def NoEmpty(text):
         for j in range(len(text[i])):
             text[i][j] = re.sub("[^A-Za-z0-9]", '', text[i][j])
         nuevo_texto.append(text[i])
-
     for i in range(len(text)):
         nuevo_texto[i] = list(filter(None, text[i]))
 
-    return nuevo_texto
+
+    nuevonuevo_texto = [[]]
+    for i in range(len(text)):
+        nuevonuevo_texto_aux = []
+        for j in range(len(text[i])):
+            if len(text[i][j]) != 0:
+                nuevonuevo_texto_aux.append(text[i][j])
+        nuevonuevo_texto.append(nuevonuevo_texto_aux)
+    nuevonuevo_texto[0].insert(0,'null')
+    nuevonuevo_texto[1].insert(0,'null')
+    nuevonuevo_texto.pop(0)
+    nuevonuevo_texto.pop(0)
+
+    return nuevonuevo_texto
 
 
 
@@ -114,7 +126,7 @@ def CalculateIDF(text, dictionary):
             for key in dictionary.keys():
                 if str(text[i][j]) is key:
                     # print(str(text[i][j]) + str(dictionary[key]))
-                    idf = math.log(float(totalNumber / dictionary[key]))
+                    idf = math.log10(float(totalNumber / dictionary[key]))
                     word_n_idf[key] = idf
     return word_n_idf
 
