@@ -185,15 +185,17 @@ class CosineSim:
         self.tweetNumber = tweetNumber
 
 class main():
-
+'''
     baseArray = lectura()
-    # print(baseArray)
+    # print(baseArray) '''
 
     query = (str(input("Write query: ")))
-    baseArray.append(query)
+    baseArray.append(query) 
 
     numberOfDocs = GetNumberOfDocs(baseArray)
     # print(numberOfDocs)
+    
+'''
     tokenizedArray = tokenizado(baseArray)
     # print(tokenizedArray)
     lowerArray = LowerNTokenize(tokenizedArray)
@@ -211,7 +213,7 @@ class main():
     # for vector in docsOfWords:
     #     print(str(vector.tfidfList))
     cosinesSimilarities = GetCosines(docsOfWords, baseArray)
-
+'''
 
    
 
