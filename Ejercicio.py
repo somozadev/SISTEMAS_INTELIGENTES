@@ -13,6 +13,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 from scipy import spatial
 import operator
+from textblob import TextBlob
 nltk.download('stopwords')
 
 # textplob? >> replace
@@ -156,8 +157,7 @@ def GetCosines(docsOfWords, baseArray):
         cosinesSimilarities.append(CosineSim(cosineSimilarity,i))
 
     sortedCosines = sorted(cosinesSimilarities, key = operator.attrgetter('cosine'))
-    analisisSentimiento(sortedCosines)
-    print("5º" + "\n cosine:" + str(sortedCosines[147].cosine) + "\n tweet id:" + str(sortedCosines[147].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[147].tweetNumber])+ "\n sentimiento:"''' +str(analisisSentimiento(baseArray[sortedCosines[147].tweetNumber]))''')
+    print("5º" + "\n cosine:" + str(sortedCosines[147].cosine) + "\n tweet id:" + str(sortedCosines[147].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[147].tweetNumber])+ "\n sentimiento:" '''+str(analisisSentimiento(baseArray[sortedCosines[147].tweetNumber]))''')
     print("4º" + "\n cosine:" + str(sortedCosines[148].cosine) + "\n tweet id:" + str(sortedCosines[148].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[148].tweetNumber])+ "\n sentimiento:" '''+str(analisisSentimiento(baseArray[sortedCosines[148].tweetNumber]))''')
     print("3º" + "\n cosine:" + str(sortedCosines[149].cosine) + "\n tweet id:" + str(sortedCosines[149].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[149].tweetNumber])+ "\n sentimiento:" '''+str(analisisSentimiento(baseArray[sortedCosines[149].tweetNumber]))''')
     print("2º" + "\n cosine:" + str(sortedCosines[150].cosine) + "\n tweet id:" + str(sortedCosines[150].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[150].tweetNumber])+ "\n sentimiento:" '''+str(analisisSentimiento(baseArray[sortedCosines[150].tweetNumber]))''')
