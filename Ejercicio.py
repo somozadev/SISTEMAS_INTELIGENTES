@@ -13,7 +13,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 from scipy import spatial
 import operator
-
+from textblob import TextBlob
 nltk.download('stopwords')
 
 # textplob? >> replace
@@ -104,12 +104,14 @@ def GetIDF(word, tweets):
             counter += 1
         exists = False
 
-    return math.log10(GetNumberOfDocs(tweets)/counter) 
+    return math.log10(GetNumberOfDocs(tweets)/counter)
 
 
 def GetTFIDF(tf, idf):
     return tf*idf
 
+# Recorre todo el array de arrays resultante del tokenizado el stemmed y la limpia de palabras
+# duplicadas para tener un bag of words uniforme.
 def GetBagOfWords(noemptyslotsString):
     bagOfWords = []
     for tweet in noemptyslotsString:
@@ -121,9 +123,8 @@ def GetBagOfWords(noemptyslotsString):
         if word not in aux:
             aux.add(word)
             result.append(word)
-    # print("BAG: " + str(bagOfWords))
-    # print("BAG: " + str(result))
     return result
+
 
 def GetBagOfWordsTFIDF(noemptyslotsString, simpleBagOfWords):
 
@@ -136,11 +137,12 @@ def GetBagOfWordsTFIDF(noemptyslotsString, simpleBagOfWords):
             tf = GetTF(word, tweet)
             tfidf = GetTFIDF(tf, idf)
             tfidfVector.append(tfidf)
-        BagOfVectorWords.append(VectorWord(word,tfidfVector))
+        BagOfVectorWords.append(VectorWord(word, tfidfVector))
 
     return BagOfVectorWords
 
-def GetDocsOfWords(numberOfDocs,bagOfWords):
+
+def GetDocsOfWords(numberOfDocs, bagOfWords):
     vectorDocs = []
     counter = 0
     for doc in range(numberOfDocs):
@@ -151,93 +153,85 @@ def GetDocsOfWords(numberOfDocs,bagOfWords):
         vectorDocs.append(vectorDocsValue)
     return vectorDocs
 
+
 def GetCosines(docsOfWords, baseArray):
     cosinesSimilarities = []
-    for i in range(len(docsOfWords)-1): #se pone -1 para no incluir la propia query
-        cosineSimilarity = 1 - spatial.distance.cosine(docsOfWords[i],docsOfWords[len(docsOfWords)-1])
-        cosinesSimilarities.append(CosineSim(cosineSimilarity,i))
+    for i in range(len(docsOfWords)-1):  # se pone -1 para no incluir la propia query
+        cosineSimilarity = 1 - \
+            spatial.distance.cosine(
+                docsOfWords[i], docsOfWords[len(docsOfWords)-1])
+        cosinesSimilarities.append(CosineSim(cosineSimilarity, i))
 
-    sortedCosines = sorted(cosinesSimilarities, key = operator.attrgetter('cosine'))
-    print("5º" + "\n cosine:" + str(sortedCosines[147].cosine) + "\n tweet id:" + str(sortedCosines[147].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[147].tweetNumber]))
-    print("4º" + "\n cosine:" + str(sortedCosines[148].cosine) + "\n tweet id:" + str(sortedCosines[148].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[148].tweetNumber]))
-    print("3º" + "\n cosine:" + str(sortedCosines[149].cosine) + "\n tweet id:" + str(sortedCosines[149].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[149].tweetNumber]))
-    print("2º" + "\n cosine:" + str(sortedCosines[150].cosine) + "\n tweet id:" + str(sortedCosines[150].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[150].tweetNumber]))
-    print("1º" + "\n cosine:" + str(sortedCosines[151].cosine) + "\n tweet id:" + str(sortedCosines[151].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[151].tweetNumber]))
+    sortedCosines = sorted(cosinesSimilarities,
+                           key=operator.attrgetter('cosine'))
+    print("5º" + "\n cosine:" + str(sortedCosines[147].cosine) + "\n tweet id:" + str(sortedCosines[147].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[147].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[147].tweetNumber]))))
+    print("4º" + "\n cosine:" + str(sortedCosines[148].cosine) + "\n tweet id:" + str(sortedCosines[148].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[148].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[148].tweetNumber]))))
+    print("3º" + "\n cosine:" + str(sortedCosines[149].cosine) + "\n tweet id:" + str(sortedCosines[149].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[149].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[149].tweetNumber]))))
+    print("2º" + "\n cosine:" + str(sortedCosines[150].cosine) + "\n tweet id:" + str(sortedCosines[150].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[150].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[150].tweetNumber]))))
+    print("1º" + "\n cosine:" + str(sortedCosines[151].cosine) + "\n tweet id:" + str(sortedCosines[151].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[151].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[151].tweetNumber]))))
 
     return sortedCosines
 
-<<<<<<< HEAD
 def analisisSentimiento(frase):
 
-    analysis = TextBlob(frase)
-    language = analysis.detect_language()
+    analysis=TextBlob(frase)
+    language=analysis.detect_language()
     if language == 'en':
-        analysis_ready = analysis
+        analysis_ready=analysis
     else:
-        analysis_ready = analysis.translate(to='en')
-                
-    if analysis_ready.sentiment.polarity > 0: 
+        analysis_ready=analysis.translate(to='en')
+
+    if analysis_ready.sentiment.polarity > 0:
         return("positive")
-    elif analysis_ready.sentiment.polarity == 0: 
+    elif analysis_ready.sentiment.polarity == 0:
         return("neutral")
-    else: 
+    else:
         return("negative")
-=======
->>>>>>> parent of 78c1797 (Merge branch 'master' of https://github.com/somozadev/SISTEMAS_INTELIGENTES)
 
 def GetNumberOfDocs(text):
-    number = 0
+    number=0
     for i in range(len(text)):
         number += 1
     return number
 
 class VectorWord:
     def __init__(self, word, tfidfList):
-        self.word = word
-        self.tfidfList = tfidfList
+        self.word=word
+        self.tfidfList=tfidfList
 class VectorDoc:
     def __init__(self, tfidfList):
-        self.tfidfList = tfidfList
+        self.tfidfList=tfidfList
 class CosineSim:
     def __init__(self, cosine, tweetNumber):
-        self.cosine = cosine
-        self.tweetNumber = tweetNumber
+        self.cosine=cosine
+        self.tweetNumber=tweetNumber
 
 class main():
 
-tokenizedArray = tokenizado(baseArray)
-print(tokenizedArray)
-
-'''
-    baseArray = lectura()
+    baseArray=lectura()
     # print(baseArray) '''
-'''
-    query = (str(input("Write query: ")))
-    baseArray.append(query) 
 
+    query=(str(input("Write query: ")))
+    baseArray.append(query)
 
-    numberOfDocs = GetNumberOfDocs(baseArray)
+    numberOfDocs=GetNumberOfDocs(baseArray)
     # print(numberOfDocs)
-    
 
-    
-    lowerArray = LowerNTokenize(tokenizedArray)
+
+    tokenizedArray=tokenizado(baseArray)
+    # print(tokenizedArray)
+    lowerArray=LowerNTokenize(tokenizedArray)
     # print(lowerArray)
-    stemmedString = Stemmer(lowerArray)
+    stemmedString=Stemmer(lowerArray)
     # print(stemmedString)
-    noemptyslotsString = NoEmpty(stemmedString)
+    noemptyslotsString=NoEmpty(stemmedString)
     # print(noemptyslotsString)
-    simpleBagOfWords = GetBagOfWords(noemptyslotsString) 
+    simpleBagOfWords=GetBagOfWords(noemptyslotsString)
     # print(simpleBagOfWords)
-    bagOfWords = GetBagOfWordsTFIDF(noemptyslotsString, simpleBagOfWords)
+    bagOfWords=GetBagOfWordsTFIDF(noemptyslotsString, simpleBagOfWords)
     # for vector in bagOfWords:
     #     print(str(vector.word) + ":" + str(vector.tfidfList))
-    docsOfWords = GetDocsOfWords(numberOfDocs,bagOfWords)
+    docsOfWords=GetDocsOfWords(numberOfDocs, bagOfWords)
     # for vector in docsOfWords:
     #     print(str(vector.tfidfList))
-    cosinesSimilarities = GetCosines(docsOfWords, baseArray)
-'''
-
-   
-
-    
+    cosinesSimilarities=GetCosines(docsOfWords, baseArray)
