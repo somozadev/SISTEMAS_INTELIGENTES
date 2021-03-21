@@ -150,6 +150,7 @@ def GetDocsOfWords(numberOfDocs,bagOfWords):
         counter += 1
         vectorDocs.append(vectorDocsValue)
     return vectorDocs
+
 def GetCosines(docsOfWords, baseArray):
     cosinesSimilarities = []
     for i in range(len(docsOfWords)-1): #se pone -1 para no incluir la propia query
@@ -175,7 +176,7 @@ def analisisSentimiento(frase):
         analysis_ready = analysis.translate(to='en')
                 
     if analysis_ready.sentiment.polarity > 0: 
-        retur("positive")
+        return("positive")
     elif analysis_ready.sentiment.polarity == 0: 
         return("neutral")
     else: 
@@ -200,19 +201,23 @@ class CosineSim:
         self.tweetNumber = tweetNumber
 
 class main():
+
+tokenizedArray = tokenizado(baseArray)
+print(tokenizedArray)
+
 '''
     baseArray = lectura()
     # print(baseArray) '''
-
+'''
     query = (str(input("Write query: ")))
     baseArray.append(query) 
+
 
     numberOfDocs = GetNumberOfDocs(baseArray)
     # print(numberOfDocs)
     
-'''
-    tokenizedArray = tokenizado(baseArray)
-    # print(tokenizedArray)
+
+    
     lowerArray = LowerNTokenize(tokenizedArray)
     # print(lowerArray)
     stemmedString = Stemmer(lowerArray)
