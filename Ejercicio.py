@@ -29,8 +29,6 @@ def lectura():
     return values
 
 # tokeniza el array de tweets
-
-
 def tokenizado(testStringArray):
     arrayTokenizado = []
     for i in testStringArray:
@@ -48,8 +46,6 @@ def LowerNTokenize(baseString):
     return newBaseString
 
 # realiza el stemmer de los tweets tokenizados. también los pasa por una stoplist durante el stemmer
-
-
 def Stemmer(tokenized_text):
     result_txt = [[]]
     stemmer = SnowballStemmer('spanish')
@@ -59,8 +55,6 @@ def Stemmer(tokenized_text):
     return result_txt
 
 # limpia los espacios en blanco
-
-
 def NoEmpty(text):
     nuevo_texto = [[]]
     for i in range(len(text)):
@@ -125,7 +119,8 @@ def GetBagOfWords(noemptyslotsString):
             result.append(word)
     return result
 
-
+# Para cada palabra de la bolsa de palabras calcula el idf y el tf, junto con el tfidf de cada palabra de cada tweet
+# lo guarda en una clase customizada para mayor comodidad a la hora de tratar con la información.
 def GetBagOfWordsTFIDF(noemptyslotsString, simpleBagOfWords):
 
     BagOfVectorWords = []
@@ -141,7 +136,7 @@ def GetBagOfWordsTFIDF(noemptyslotsString, simpleBagOfWords):
 
     return BagOfVectorWords
 
-
+# ordena la lista de valores tfidf obtenidos anteriormente asociandolos con un id (es decir, a su tweet correspondiente)
 def GetDocsOfWords(numberOfDocs, bagOfWords):
     vectorDocs = []
     counter = 0
@@ -153,7 +148,10 @@ def GetDocsOfWords(numberOfDocs, bagOfWords):
         vectorDocs.append(vectorDocsValue)
     return vectorDocs
 
-
+# Recorre la lista de valores tfidf ordenados por tweets resultante de GetDocsOfWords(), y calcula la distancia de coseno para 
+# cada uno de ellos ( es decir, su similitud).
+# por último ordena la lista de similarities basado en el id de la posicion de los tweets iniciales
+# y imprime los cinco primeros que más similarity tienen con la query.
 def GetCosines(docsOfWords, baseArray):
     cosinesSimilarities = []
     for i in range(len(docsOfWords)-1):  # se pone -1 para no incluir la propia query
@@ -211,12 +209,13 @@ class main():
     baseArray=lectura()
     # print(baseArray) '''
 
+    # Añade la query al final para tratarlo igual que se trata el resto de tweets, esto facilita mucho
+    # el trabajo a la hora de comprar similarities.
     query=(str(input("Write query: ")))
     baseArray.append(query)
 
     numberOfDocs=GetNumberOfDocs(baseArray)
     # print(numberOfDocs)
-
 
     tokenizedArray=tokenizado(baseArray)
     # print(tokenizedArray)
