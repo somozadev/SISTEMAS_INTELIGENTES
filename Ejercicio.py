@@ -162,11 +162,11 @@ def GetCosines(docsOfWords, baseArray):
 
     sortedCosines = sorted(cosinesSimilarities,
                            key=operator.attrgetter('cosine'))
-    print("5º" + "\n cosine:" + str(sortedCosines[147].cosine) + "\n tweet id:" + str(sortedCosines[147].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[147].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[147].tweetNumber]))))
-    print("4º" + "\n cosine:" + str(sortedCosines[148].cosine) + "\n tweet id:" + str(sortedCosines[148].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[148].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[148].tweetNumber]))))
-    print("3º" + "\n cosine:" + str(sortedCosines[149].cosine) + "\n tweet id:" + str(sortedCosines[149].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[149].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[149].tweetNumber]))))
-    print("2º" + "\n cosine:" + str(sortedCosines[150].cosine) + "\n tweet id:" + str(sortedCosines[150].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[150].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[150].tweetNumber]))))
-    print("1º" + "\n cosine:" + str(sortedCosines[151].cosine) + "\n tweet id:" + str(sortedCosines[151].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[151].tweetNumber]))  # + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[151].tweetNumber]))))
+    print("5º" + "\n cosine:" + str(sortedCosines[147].cosine) + "\n tweet id:" + str(sortedCosines[147].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[147].tweetNumber]) + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[147].tweetNumber]))))
+    print("4º" + "\n cosine:" + str(sortedCosines[148].cosine) + "\n tweet id:" + str(sortedCosines[148].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[148].tweetNumber]) + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[148].tweetNumber]))))
+    print("3º" + "\n cosine:" + str(sortedCosines[149].cosine) + "\n tweet id:" + str(sortedCosines[149].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[149].tweetNumber]) + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[149].tweetNumber]))))
+    print("2º" + "\n cosine:" + str(sortedCosines[150].cosine) + "\n tweet id:" + str(sortedCosines[150].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[150].tweetNumber]) + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[150].tweetNumber]))))
+    print("1º" + "\n cosine:" + str(sortedCosines[151].cosine) + "\n tweet id:" + str(sortedCosines[151].tweetNumber) + "\n tweet:" + str(baseArray[sortedCosines[151].tweetNumber]) + "\n sentimiento:" +str(analisisSentimiento(str(baseArray[sortedCosines[151].tweetNumber]))))
 
     return sortedCosines
 
@@ -229,7 +229,7 @@ class main():
     # print(simpleBagOfWords)
     bagOfWords=GetBagOfWordsTFIDF(noemptyslotsString, simpleBagOfWords)
     # for vector in bagOfWords:
-    #     print(str(vector.word) + ":" + str(vector.tfidfList))
+        # print(str(vector.word) + ":" + str(vector.tfidfList))
     docsOfWords=GetDocsOfWords(numberOfDocs, bagOfWords)
     # for vector in docsOfWords:
     #     print(str(vector.tfidfList))
