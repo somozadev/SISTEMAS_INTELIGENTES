@@ -1,0 +1,14 @@
+<MyLayout>
+    BoxLayout:
+        orientation:"vertical"
+        size: root.width, root.height
+        Label:
+            id: click_label
+            text: "Pick User:"
+            font_size:32
+        Spinner: 
+            id: spinner_id
+            text:"User id"
+            values: root.get_users()
+    
+            on_text: root.spinner_clicked("User_id: " + spinner_id.text)

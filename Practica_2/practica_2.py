@@ -1,21 +1,14 @@
-import PySimpleGUI as sg
+
+
 import sqlite3 as sq
 import csv 
 import os
+
 PATH = 'e:/CARRERA/4ºCARRERA/2º CUATRI/Sistemas Inteligentes y representacion del conocimiento/SISTEMAS_INTELIGENTES/Practica_2/'
-
-
-
-# layout = [[sg.Text("Hello ")], [sg.Button("Ok")]]
-# window = sg.Window(title="APP",layout=layout, margins=(100,50))
-# while True:
-#     event, values = window.read()
-#     if event == "Ok" or event == sg.WINDOW_CLOSED:
-#         break
-# window.close()
 
 class DBTool():
     def __init__(self):
+        self.users = []
         self.con = sq.connect(PATH + 'database.db')
         self.cur = self.con.cursor()
         linksFile ='links.csv'
@@ -23,11 +16,16 @@ class DBTool():
         ratingFile = 'ratings.csv'
         tagsFile = 'tags.csv'
         self.ClearDb()
-        self.UploadCsv(linksFile)
-        self.UploadCsv(moviesFile)
-        self.UploadCsv(ratingFile)
-        self.UploadCsv(tagsFile)        
+        if self.Exists("Links") == False:    
+            self.UploadCsv(linksFile)
+        if self.Exists("Movies") == False:   
+            self.UploadCsv(moviesFile)
+        if self.Exists("Ratings") == False:   
+            self.UploadCsv(ratingFile)
+        if self.Exists("Tags") == False:   
+            self.UploadCsv(tagsFile)        
         self.con.commit()
+        self.GetUsers()
         
     def ClearDb(self):
         self.cur.execute("DELETE FROM Links")
@@ -59,11 +57,22 @@ class DBTool():
                 print('Iserting into tags...')
                 to_db = [(i['userId'],i['movieId'],i['tag'],i['timestamp']) for i in dr]
                 self.cur.executemany("INSERT OR IGNORE INTO Tags(userId, movieId, tag, timestamp) VALUES (?,?,?,?);",to_db)
-
-
-    
-class main():
+    def GetUsers(self):
+        self.cur.execute("SELECT userId FROM ratings")
+        aux = self.cur.fetchall()
+        for user in aux:
+            self.users.append(user[0])
+        self.users = sorted(list(dict.fromkeys(self.users)))
+    def Exists(self,table):
+        self.cur.execute(f"SELECT COUNT(*) from {table}")
+        aux = self.cur.fetchone()
+        if int(aux[0]) > 0:
+            return True
+        else: 
+            return False
+        
+        
+class main():    
     database = DBTool()
-    
     
     
