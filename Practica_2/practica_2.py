@@ -9,6 +9,7 @@ PATH = 'e:/CARRERA/4ºCARRERA/2º CUATRI/Sistemas Inteligentes y representacion 
 class DBTool():
     def __init__(self):
         self.users = []
+        self.ratingTable = []
         self.con = sq.connect(PATH + 'database.db')
         self.cur = self.con.cursor()
         linksFile ='links.csv'
@@ -63,6 +64,84 @@ class DBTool():
         for user in aux:
             self.users.append(user[0])
         self.users = sorted(list(dict.fromkeys(self.users)))
+    def GetMoviesRatings(self):
+        #gets ratings from db
+        self.cur.execute("SELECT userId,movieId,rating FROM ratings")
+        aux = self.cur.fetchall()
+        self.ratingTable = aux
+        
+        #gets current base matrix setup
+        userIdCounter = 1
+        data = {}
+        currentUserData = []
+        matrix = []
+        for group in self.ratingTable:
+            
+            if group[0] == userIdCounter:
+                data['movie_rating'] = group[1],group[2]
+                currentUserData.append(data.copy())
+                data.clear()      
+                if group == self.ratingTable[len(self.ratingTable)-1]:
+                    matrix.append(currentUserData.copy())
+                              
+            else: 
+                matrix.append(currentUserData.copy())
+                currentUserData.clear()
+                data.clear()
+                userIdCounter+=1
+                data['movie_rating'] = group[1],group[2]
+                currentUserData.append(data.copy())
+        self.ratingTable = matrix
+        
+        #gets the media from each user rating
+        userIdCounter = 1
+        usersRatingsMid = []
+        for group in self.ratingTable: 
+            userMid = 0
+            for dictio in group:
+                film, rating = list(dictio.values())[0]
+                userMid += rating
+                
+            usersRatingsMid.append(userMid/len(group))    
+             
+        
+        #creates the new matrix with rating values based on the usersRatingMid (current - usersRatingMid)
+        for group in self.ratingTable: 
+            for dictio in group:
+                film, rating = list(dictio.values())[0]
+                dictio['movie_rating'] = film, rating - usersRatingsMid[self.ratingTable.index(group)]
+        self.Sim(592,593)
+        
+    
+    """
+    DUDA: PARA CALCULAR LA SIMILITUD ENTRE 2 ITEMS, QUE SE SUPONE QUE HACES PARA LA FORMULA SI 
+    EL NUMERO DE VALORACIONES DE UN ITEM ES 160 Y DEL SEGUNDO 300 (EL Nº DE USUARIOS QUE LA HAN VALORADO)
+    SE SUPONE QUE NO TIENES EN CUENTA A LOS 140 RESTANTES PARA PODER APLICAR LA FORMULA???
+    
+    """    
+        
+        
+        
+    def Sim(self, idOne,idTwo):   
+        topratingA = [] 
+        topratingB = []
+        top = 0
+        for group in self.ratingTable: 
+            for dictio in group:
+                film, rating = list(dictio.values())[0]
+                if film == idOne: 
+                    topratingA.append(rating)
+                    print("A",dictio)
+                elif film == idTwo:
+                    topratingB.append(rating)
+                    print("B",dictio)
+        print(len(topratingA))
+        print(len(topratingB))
+        for i in len(topratingA):
+            pass             
+                    
+        
+        
     def Exists(self,table):
         self.cur.execute(f"SELECT COUNT(*) from {table}")
         aux = self.cur.fetchone()
@@ -70,9 +149,12 @@ class DBTool():
             return True
         else: 
             return False
-        
+
+
+                   
         
 class main():    
     database = DBTool()
-    
+    input()
+    database.GetMoviesRatings()
     
