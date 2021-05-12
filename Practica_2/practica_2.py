@@ -36,12 +36,16 @@ class DBTool():
         
     def ClearDb(self):
         self.cur.execute("DELETE FROM Links")
-        self.cur.execute("DELETE FROM Movies")
-        self.cur.execute("DELETE FROM Ratings")
-        self.cur.execute("DELETE FROM Tags")
-        self.cur.execute("DELETE FROM Ratings_prepared")
-        print("Database fully cleared...")
         self.con.commit()
+        self.cur.execute("DELETE FROM Movies")
+        self.con.commit()
+        self.cur.execute("DELETE FROM Ratings")
+        self.con.commit()
+        self.cur.execute("DELETE FROM Tags")
+        self.con.commit()
+        self.cur.execute("DELETE FROM Ratings_prepared")
+        self.con.commit()
+        print("Database fully cleared...")
         
     def UploadCsv(self,csvFile):
         with open(PATH + csvFile,'r',errors="ignore") as r: 
@@ -65,7 +69,7 @@ class DBTool():
                 print('Iserting into tags...')
                 to_db = [(i['userId'],i['movieId'],i['tag'],i['timestamp']) for i in dr]
                 self.cur.executemany("INSERT INTO Tags(userId, movieId, tag, timestamp) VALUES (?,?,?,?);",to_db)
-            
+        
         self.con.commit()
         
     def GetUsers(self):
@@ -75,10 +79,7 @@ class DBTool():
             self.users.append(user[0])
         self.users = sorted(list(dict.fromkeys(self.users)))
     def GetMoviesRatings(self):
-        
-        self.cur.execute("DELETE FROM Tags")
-        self.con.commit()
-        
+                
         #gets ratings from db
         self.cur.execute("SELECT userId,movieId,rating FROM ratings")
         aux = self.cur.fetchall()
