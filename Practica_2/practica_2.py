@@ -9,6 +9,11 @@ PATH = 'e:/CARRERA/4ºCARRERA/2º CUATRI/Sistemas Inteligentes y representacion 
 class DBTool():
     def __init__(self):
         self.users = []
+        """
+                     USER 1                  USER 2                  USER 3          ...        
+        [ [DICT_OF_IDMOVIE_RATING],[DICT_OF_IDMOVIE_RATING],[DICT_OF_IDMOVIE_RATING]...]
+        
+        """
         self.ratingTable = []
         self.con = sq.connect(PATH + 'database.db')
         self.cur = self.con.cursor()
@@ -33,6 +38,7 @@ class DBTool():
         self.cur.execute("DELETE FROM Movies")
         self.cur.execute("DELETE FROM Ratings")
         self.cur.execute("DELETE FROM Tags")
+        self.cur.execute("DELETE FROM Ratings_prepared")
         print("Database fully cleared...")
         self.con.commit()
         
@@ -65,6 +71,10 @@ class DBTool():
             self.users.append(user[0])
         self.users = sorted(list(dict.fromkeys(self.users)))
     def GetMoviesRatings(self):
+        
+        self.cur.execute("DELETE FROM Tags")
+        self.con.commit()
+        
         #gets ratings from db
         self.cur.execute("SELECT userId,movieId,rating FROM ratings")
         aux = self.cur.fetchall()
@@ -110,17 +120,21 @@ class DBTool():
             for dictio in group:
                 film, rating = list(dictio.values())[0]
                 dictio['movie_rating'] = film, rating - usersRatingsMid[self.ratingTable.index(group)]
-        self.Sim(592,593)
         
-    
-    """
-    DUDA: PARA CALCULAR LA SIMILITUD ENTRE 2 ITEMS, QUE SE SUPONE QUE HACES PARA LA FORMULA SI 
-    EL NUMERO DE VALORACIONES DE UN ITEM ES 160 Y DEL SEGUNDO 300 (EL Nº DE USUARIOS QUE LA HAN VALORADO)
-    SE SUPONE QUE NO TIENES EN CUENTA A LOS 140 RESTANTES PARA PODER APLICAR LA FORMULA???
-    
-    """    
+        # creates a table with the new rating values based on the usersRatingsMid         
+        sqltuple = []
+        print("Iserting into Ratings_prepared...")
+        for group in self.ratingTable: 
+            for dictio in group:
+                film, rating = list(dictio.values())[0]
+                tup = (self.ratingTable.index(group)+1,film,rating)
+                sqltuple.append(tup)
+                
+        q = """INSERT INTO Ratings_prepared (userId,movieId,rating) VALUES (?,?,?)"""
+        self.cur.executemany(q,sqltuple)
+        self.con.commit()
         
-        
+            
         
     def Sim(self, idOne,idTwo):   
         topratingA = [] 
@@ -155,6 +169,6 @@ class DBTool():
         
 class main():    
     database = DBTool()
-    input()
+    
     database.GetMoviesRatings()
     
