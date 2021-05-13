@@ -249,6 +249,10 @@ class DBTool():
                 filmAskedSim.append((filmNextId,sim))
         end = time.perf_counter()
         print(f"Similitud for {idSearch} calulated in {round(end-start,2)} (sg)")
+        cur.execute(f"CREATE TABLE sim{str(idSearch)} (movieId integer, sim numeric);")
+        con.commit()
+        cur.executemany(f"INSERT INTO sim{str(idSearch)} (movieId, sim) VALUES (?,?);",filmAskedSim)
+        con.commit()
         return filmAskedSim
 class Predict():
     #hacer una lista con todos los usuarios
@@ -277,11 +281,7 @@ class main():
             filmAskedSim = []
             futures.append(executor.submit(database.Sim, movie, filmAskedSim))
         for future in concurrent.futures.as_completed(futures):
-            print("future.result()",future.result())
-            database.cur.execute(f"CREATE TABLE sim{str(movie)} (movieId integer, sim numeric);")
-            database.con.commit()
-            database.cur.executemany(f"INSERT INTO sim{str(movie)} (movieId, sim) VALUES (?,?);",future.result())
-            database.con.commit()
+            print(f"thread {future} finished")
             
     
     # for movie in database.movies:
