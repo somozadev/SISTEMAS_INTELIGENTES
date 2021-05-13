@@ -2,26 +2,29 @@
 
 import sqlite3 as sq
 import csv 
-import os
+import math as m
+import time
 
 PATH = 'Practica_2/'
 
 class DBTool():
     def __init__(self):
-        self.users = []
+        self.users = [] #610 users in total
+        self.movies = [] #9742 films in total
+        self.ratingTable = []
         """
                      USER 1                  USER 2                  USER 3          ...        
         [ [DICT_OF_IDMOVIE_RATING],[DICT_OF_IDMOVIE_RATING],[DICT_OF_IDMOVIE_RATING]...]
         
         """
-        self.ratingTable = []
         self.con = sq.connect(PATH + 'database.db')
         self.cur = self.con.cursor()
         linksFile ='links.csv'
         moviesFile = 'movies.csv'
         ratingFile = 'ratings.csv'
         tagsFile = 'tags.csv'
-        self.ClearDb()
+        
+        # self.ClearDb()
         
         if self.Exists("Links") == False:    
             self.UploadCsv(linksFile)
@@ -33,6 +36,7 @@ class DBTool():
             self.UploadCsv(tagsFile)        
         
         self.GetUsers()
+        self.GetMovies()
         
     def ClearDb(self):
         self.cur.execute("DELETE FROM Links")
@@ -78,8 +82,27 @@ class DBTool():
         for user in aux:
             self.users.append(user[0])
         self.users = sorted(list(dict.fromkeys(self.users)))
+    
+    def GetMovies(self):
+        self.cur.execute("SELECT movieId FROM Movies")
+        aux = self.cur.fetchall()
+        for movie in aux:
+            self.movies.append(movie[0])
+        self.movies = sorted(list(dict.fromkeys(self.movies)))
+    
+    def Exists(self,table):
+        self.cur.execute(f"SELECT COUNT(*) from {table}")
+        aux = self.cur.fetchone()
+        if int(aux[0]) > 0:
+            return True
+        else: 
+            return False
+        
+        
     def GetMoviesRatings(self):
-                
+            
+        if self.Exists("Ratings_prepared") == True:   
+            return    
         #gets ratings from db
         self.cur.execute("SELECT userId,movieId,rating FROM ratings")
         aux = self.cur.fetchall()
@@ -107,16 +130,19 @@ class DBTool():
                 data['movie_rating'] = group[1],group[2]
                 currentUserData.append(data.copy())
         self.ratingTable = matrix
-        
+         
         #gets the media from each user rating
         userIdCounter = 1
         usersRatingsMid = []
+        first = True
         for group in self.ratingTable: 
             userMid = 0
             for dictio in group:
                 film, rating = list(dictio.values())[0]
                 userMid += rating
-                
+            if first == True:
+                input((userMid, userMid/len(group)))
+                first = False
             usersRatingsMid.append(userMid/len(group))    
              
         
@@ -135,42 +161,87 @@ class DBTool():
                 tup = (self.ratingTable.index(group)+1,film,rating)
                 sqltuple.append(tup)
                 
-        q = """INSERT INTO Ratings_prepared (userId,movieId,rating) VALUES (?,?,?)"""
+        q = """INSERT INTO Ratings_prepared (userId,movieId,ratingmid) VALUES (?,?,?)"""
         self.cur.executemany(q,sqltuple)
         self.con.commit()
+    #calcula la raiz de la suma cuadrada de los elementos dados
+    def GetBottomSqrt(self, filmWithRating):
+            square_filmWithRating = [rating**2 for rating in filmWithRating]
+            filmSqr_searched = m.sqrt(sum(square_filmWithRating))
+            return filmSqr_searched
+    
+    #la sqrt esta perfecta, falta la suma de arriba. para ello hay que recoger una tabla de todos los usuarios y los ratings que hayan o no dado para las 2 peliculas de la query...
+    def Sim(self, idSearch, filmAskedSim):
         
-            
+        self.cur.execute(f"SELECT ratingmid FROM Ratings_prepared WHERE movieId == {idSearch};")
+        aux = self.cur.fetchall()
+        filmWithRating = [l[0] for l in aux]
+        # print("Films: ",filmWithRating)
         
-    def Sim(self, idOne,idTwo): 
-        pass  
-        # topratingA = [] 
-        # topratingB = []
-        # top = 0
-        # for group in self.ratingTable: 
-        #     for dictio in group:
-        #         film, rating = list(dictio.values())[0]
-        #         if film == idOne: 
-        #             topratingA.append(rating)
-        #             print("A",dictio)
-        #         elif film == idTwo:
-        #             topratingB.append(rating)
-        #             print("B",dictio)
-        # print(len(topratingA))
-        # print(len(topratingB))
-        # for i in len(topratingA):
-        #     pass             
+        # print("filmLen_searched: ", len(filmWithRating))
+        filmSqr_searched = self.GetBottomSqrt(filmWithRating)
+        # print("filmSqr_searched: ", filmSqr_searched) #sqrt1
+        
+        for movie in self.movies:
+            if movie != self.movies[self.movies.index(idSearch)]:
+                filmNextId = movie
+                self.cur.execute(f"SELECT ratingmid FROM Ratings_prepared WHERE movieId == {filmNextId};")
+                aux = self.cur.fetchall()
+                filmNeighbour = [l[0] for l in aux]        
+
+                filmSqr_neighbour = self.GetBottomSqrt(filmNeighbour)
+                bottomCos = filmSqr_searched * filmSqr_neighbour
+
+                #Coge las 2 querys de las 2 movieId con sus usrs ratings
+                self.cur.execute(f"SELECT userId, ratingmid FROM Ratings_prepared WHERE (movieId == {idSearch}) ORDER BY userId ASC;")
+                aux1 = self.cur.fetchall()
+                m1 = [l for l in aux1]
+                self.cur.execute(f"SELECT userId, ratingmid FROM Ratings_prepared WHERE (movieId == {filmNextId}) ORDER BY userId ASC;")
+                aux2 = self.cur.fetchall()
+                m2 = [l for l in aux2]
+
+                #all users related within both querys
+                currusers = []
+                for user,movie in aux1: 
+                    currusers.append(user)
+                for user,movie in aux1:
+                    if currusers.__contains__(user) == False:
+                        currusers.append(user)
+
+                resultm = []
+
+                for usr in currusers:
+                    resultm.append((usr,None,None))
+                resultm = [list(tup) for tup in resultm]
+
+                #resultm is the result matrix of both moviesID and all of the users
+                for i in resultm:
+                    if resultm.index(i) < len(aux1):
+                        i[1] = 0
+                        for urs,rnq in aux1:    
+                            if urs == i[0]: #
+                                i[1] = rnq   
+                    else:
+                        i[1] = 0
+                    if resultm.index(i) < len(aux2):   
+                        i[2] = 0       
+                        for urs,rnq in aux2:           
+                            if urs == i[0]:
+                                i[2] = rnq
+                    else:
+                        i[2] = 0
+
+                topCos = sum([(rateA * rateB) for userId,rateA,rateB in resultm])
+                
+                if bottomCos != 0:
+                    sim = topCos/bottomCos
+                else:
+                    sim = 0
                     
-        
-        
-    def Exists(self,table):
-        self.cur.execute(f"SELECT COUNT(*) from {table}")
-        aux = self.cur.fetchone()
-        if int(aux[0]) > 0:
-            return True
-        else: 
-            return False
-
-
+                # print("bottomCos", bottomCos)     
+                # print("topCos",topCos)
+                # print(f"SIM of {idSearch} and {filmNextId}",sim)
+                filmAskedSim.append((filmNextId,sim))
 class Predict():
     #hacer una lista con todos los usuarios
     #hacer una lista con todas las peliculas que el usuario ^ seleccionado no haya visto 
@@ -182,4 +253,31 @@ class main():
     database = DBTool()
     
     database.GetMoviesRatings()
+    print(database.movies[189])
+    database.movies = database.movies[189:]
     
+    for movie in database.movies:
+        filmAskedSim = []
+        print(movie)
+        start = time.perf_counter()
+        print("Calculating Similitude, please wait...")
+        database.Sim(movie,filmAskedSim)
+        end = time.perf_counter()
+        
+        database.cur.execute(f"CREATE TABLE sim{str(movie)} (movieId integer, sim numeric);")
+        database.con.commit()
+        database.cur.executemany(f"INSERT INTO sim{str(movie)} (movieId, sim) VALUES (?,?);",filmAskedSim)
+        database.con.commit()
+        
+        
+        
+        
+        
+        # filmAskedSim = filmAskedSim.sort()
+        # print(filmAskedSim)
+        # print(f"Similitud calulated in {round(end-start,2)} (sg)")
+        # with open(PATH + 'sim'+str(movie)+'.csv','w') as file: 
+        #     wr = csv.writer(file)
+        #     wr.writerow(['filmNextId','sim'])
+        #     for row in filmAskedSim:
+        #         wr.writerow(row)
