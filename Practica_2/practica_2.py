@@ -4,6 +4,7 @@ import sqlite3 as sq
 import csv 
 import math as m
 import time
+import concurrent.futures
 
 PATH = 'Practica_2/'
 
@@ -173,8 +174,12 @@ class DBTool():
     #la sqrt esta perfecta, falta la suma de arriba. para ello hay que recoger una tabla de todos los usuarios y los ratings que hayan o no dado para las 2 peliculas de la query...
     def Sim(self, idSearch, filmAskedSim):
         
-        self.cur.execute(f"SELECT ratingmid FROM Ratings_prepared WHERE movieId == {idSearch};")
-        aux = self.cur.fetchall()
+        start = time.perf_counter()
+        print(f"Calculating Similitud for {idSearch}, please wait...")
+        con = sq.connect(PATH + 'database.db')
+        cur = con.cursor()
+        cur.execute(f"SELECT ratingmid FROM Ratings_prepared WHERE movieId == {idSearch};")
+        aux = cur.fetchall()
         filmWithRating = [l[0] for l in aux]
         # print("Films: ",filmWithRating)
         
@@ -185,19 +190,19 @@ class DBTool():
         for movie in self.movies:
             if movie != self.movies[self.movies.index(idSearch)]:
                 filmNextId = movie
-                self.cur.execute(f"SELECT ratingmid FROM Ratings_prepared WHERE movieId == {filmNextId};")
-                aux = self.cur.fetchall()
+                cur.execute(f"SELECT ratingmid FROM Ratings_prepared WHERE movieId == {filmNextId};")
+                aux = cur.fetchall()
                 filmNeighbour = [l[0] for l in aux]        
 
                 filmSqr_neighbour = self.GetBottomSqrt(filmNeighbour)
                 bottomCos = filmSqr_searched * filmSqr_neighbour
 
                 #Coge las 2 querys de las 2 movieId con sus usrs ratings
-                self.cur.execute(f"SELECT userId, ratingmid FROM Ratings_prepared WHERE (movieId == {idSearch}) ORDER BY userId ASC;")
-                aux1 = self.cur.fetchall()
+                cur.execute(f"SELECT userId, ratingmid FROM Ratings_prepared WHERE (movieId == {idSearch}) ORDER BY userId ASC;")
+                aux1 = cur.fetchall()
                 m1 = [l for l in aux1]
-                self.cur.execute(f"SELECT userId, ratingmid FROM Ratings_prepared WHERE (movieId == {filmNextId}) ORDER BY userId ASC;")
-                aux2 = self.cur.fetchall()
+                cur.execute(f"SELECT userId, ratingmid FROM Ratings_prepared WHERE (movieId == {filmNextId}) ORDER BY userId ASC;")
+                aux2 = cur.fetchall()
                 m2 = [l for l in aux2]
 
                 #all users related within both querys
@@ -242,6 +247,9 @@ class DBTool():
                 # print("topCos",topCos)
                 # print(f"SIM of {idSearch} and {filmNextId}",sim)
                 filmAskedSim.append((filmNextId,sim))
+        end = time.perf_counter()
+        print(f"Similitud for {idSearch} calulated in {round(end-start,2)} (sg)")
+        return filmAskedSim
 class Predict():
     #hacer una lista con todos los usuarios
     #hacer una lista con todas las peliculas que el usuario ^ seleccionado no haya visto 
@@ -253,21 +261,41 @@ class main():
     database = DBTool()
     
     database.GetMoviesRatings()
-    print(database.movies[189])
-    database.movies = database.movies[189:]
+    # print(database.movies[189])
+    database.movies = database.movies[190:]
+    print(len(database.movies))
+    cuantity = int(len(database.movies) / 4)
+    print(len(database.movies) / 4) #2388 cada uno hara un cacho de 2388 pelis
+    marcos = database.movies[0:cuantity]
+    luis = database.movies[cuantity:cuantity*2]
+    jesus = database.movies[cuantity*2:cuantity*3]
+    mati = database.movies[cuantity*3:]
     
-    for movie in database.movies:
-        filmAskedSim = []
-        print(movie)
-        start = time.perf_counter()
-        print("Calculating Similitude, please wait...")
-        database.Sim(movie,filmAskedSim)
-        end = time.perf_counter()
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+        for movie in marcos: 
+            filmAskedSim = []
+            futures.append(executor.submit(database.Sim, movie, filmAskedSim))
+        for future in concurrent.futures.as_completed(futures):
+            print("future.result()",future.result())
+            database.cur.execute(f"CREATE TABLE sim{str(movie)} (movieId integer, sim numeric);")
+            database.con.commit()
+            database.cur.executemany(f"INSERT INTO sim{str(movie)} (movieId, sim) VALUES (?,?);",future.result())
+            database.con.commit()
+            
+    
+    # for movie in database.movies:
+    #     filmAskedSim = []
+    #     print(movie)
+    #     start = time.perf_counter()
+    #     print("Calculating Similitude, please wait...")
+    #     database.Sim(movie,filmAskedSim)
+    #     end = time.perf_counter()
         
-        database.cur.execute(f"CREATE TABLE sim{str(movie)} (movieId integer, sim numeric);")
-        database.con.commit()
-        database.cur.executemany(f"INSERT INTO sim{str(movie)} (movieId, sim) VALUES (?,?);",filmAskedSim)
-        database.con.commit()
+    #     database.cur.execute(f"CREATE TABLE sim{str(movie)} (movieId integer, sim numeric);")
+    #     database.con.commit()
+    #     database.cur.executemany(f"INSERT INTO sim{str(movie)} (movieId, sim) VALUES (?,?);",filmAskedSim)
+    #     database.con.commit()
         
         
         
