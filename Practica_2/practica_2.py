@@ -3,6 +3,7 @@
 import sqlite3 as sq
 import csv 
 import math as m
+from sqlite3.dbapi2 import DatabaseError
 import time
 import concurrent.futures
 
@@ -257,24 +258,38 @@ class DBTool():
         cur.executemany(f"INSERT INTO sim{str(idSearch)} (movieId, sim) VALUES (?,?);",filmAskedSim)
         con.commit()
         return filmAskedSim
+    
 class Predict():
     #hacer una lista con todos los usuarios
     #hacer una lista con todas las peliculas que el usuario ^ seleccionado no haya visto 
     def GetPredict(self):
         return self.predict
+    
+    def GetUserNotSeenMovies(self):        
+        notSeen = self.database.movies.copy()
+        for nots in self.userMoviesSeen:
+            if self.database.movies.count(nots) > 0:
+                notSeen.pop(nots)
+                
+        return notSeen        
+                    
     def __init__(self, userId, movieId, database):
         start = time.perf_counter()
         self.predict = 0
+        self.userId = userId
+        self.database = database
+        self.movieId = movieId
+        
         #database.ratingTable[userId-1] : all ratings for current user as list of dicts of tuples
         #database.ratingTable[userId-1][0] : first dict of tuple
         #list(database.ratingTable[userId-1][0].values()) : array length1 of tuple
         #list(database.ratingTable[userId-1][0].values())[0] : tuple
         
-        userMoviesSeen = []
+        self.userMoviesSeen = []
         usermoviesRating = []
         for ratings in database.ratingTable[userId-1]:
             movie,rating = list(ratings.values())[0]
-            userMoviesSeen.append(movie)
+            self.userMoviesSeen.append(movie)
             usermoviesRating.append(rating)
         
         filmRelateds = []
@@ -289,15 +304,15 @@ class Predict():
         botSum = 0
         for filmId in filmRelateds:
             added = False
-            for userFilmSeenId in userMoviesSeen:
+            for userFilmSeenId in self.userMoviesSeen:
                 if userFilmSeenId > filmId or added == True:
                     break
                 if filmId == userFilmSeenId:
-                    topSum += usermoviesRating[userMoviesSeen.index(userFilmSeenId)] * filmSims[filmRelateds.index(filmId)]
+                    topSum += usermoviesRating[self.userMoviesSeen.index(userFilmSeenId)] * filmSims[filmRelateds.index(filmId)]
                     botSum += filmSims[filmRelateds.index(filmId)]
                     added = True
                     
-                elif userMoviesSeen[-1] == userFilmSeenId:
+                elif self.userMoviesSeen[-1] == userFilmSeenId:
                     topSum += 0
                     botSum += filmSims[filmRelateds.index(filmId)]
                     added = True
@@ -332,4 +347,4 @@ def concurrentFillup(database):
     
 class main():    
     database = DBTool()
-    Predict(1,2,database).GetPredict()
+    Predict(1,2,database).GetUserNotSeenMovies()
