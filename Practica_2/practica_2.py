@@ -264,7 +264,9 @@ class Predict():
     #hacer una lista con todas las peliculas que el usuario ^ seleccionado no haya visto 
     def GetPredict(self):
         return self.predict
-    
+    def PrintResult(self):
+        print(self.result)
+        print(self.timer)
     def GetUserNotSeenMovies(self):        
         notSeen = self.database.movies.copy()
         for nots in self.userMoviesSeen:
@@ -320,10 +322,10 @@ class Predict():
         
         database.cur.execute(f"SELECT title FROM Movies WHERE movieId == {movieId}")
         title = database.cur.fetchall()[0][0]
-        print(f"User: {userId} \nMovie: {title} \nPrediction: {self.predict} ")     
+        self.result = (f"User: {userId} \nMovie: {title} \nPrediction: {self.predict} ")     
         end = time.perf_counter()
         
-        print(f"\n Compute time: {end-start} (sg)")
+        self.timer = (f"\n Compute time: {end-start} (sg)")
             
         
 def concurrentFillup(database):       
@@ -347,4 +349,5 @@ def concurrentFillup(database):
     
 class main():    
     database = DBTool()
-    Predict(1,2,database).GetUserNotSeenMovies()
+    prediction = Predict(1,2,database)
+    prediction.PrintResult()
