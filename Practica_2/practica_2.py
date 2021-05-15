@@ -278,18 +278,18 @@ class Ranking():
             self.predictions.append((movie,pred.GetPredict()))
             self.rankTime+=pred.GetValueTimer()
         
-        
-        
+    def Sort(self):
         self.predictions = sorted(self.predictions, key=lambda x: x[1])
     def GetRankTime(self):
         return self.rankTime
     def GetRankingByN(self):
+        self.Sort()
         return self.predictions[:self.n]
     def GetRankingBySimLimit(self):
         for movie,ranked in self.predictions:
             if ranked < self.simLimit * 5: #si el umbral es .75 y la nota max es 5 : ranked debe valer al menos 3.75
-                self.predictions.pop((movie,ranked)) 
-        return self.predictions
+                self.predictions.remove((movie,ranked)) 
+        return self.GetRankingByN()
         
 class Predict():
     def GetPredict(self):
@@ -303,13 +303,8 @@ class Predict():
         return self.valueTimer
     def GetUserNotSeenMovies(self):        
         notSeen = self.database.movies.copy()
-        
-        # input(("len user seen:", len(self.userMoviesSeen)))
         for nots in self.userMoviesSeen:
-            # input((nots," count:",notSeen.count(nots)))
             if notSeen.count(nots) > 0:
-                # print("nots: ", nots )
-                # print("notSeen",notSeen[:100])
                 notSeen.remove(nots)
                     
         return notSeen        
@@ -361,8 +356,11 @@ class Predict():
             self.predict = 0
         else:
             self.predict = topSum/botSum
-        if self.predict < 0: 
+        if self.predict <= 0: 
             self.predict = 0
+        elif self.predict > 5: 
+            self.predict = 5
+            
         
         database.cur.execute(f"SELECT title FROM Movies WHERE movieId == {movieId}")
         title = database.cur.fetchall()[0][0]
@@ -379,19 +377,32 @@ class Visuals():
         self.database = database
                 
         
+        # Creating tkinter window
         self.MakeVisuals()
-    # Creating tkinter window
+        
     def UpdateMovieLabel(self,event):
+        self.user = int(self.id2choosen.current())+1
+        p = Predict(self.user,1,self.database)        
+        userSeenMovies = p.GetUserNotSeenMovies()
+        self.peliculachoosen['values'] = (userSeenMovies)
+        self.peliculachoosen.set(userSeenMovies[0])
         
-        user = int(self.id2choosen.current())+1
-        
-        p = Predict(user,1,self.database)
-        # time.sleep(1)
-        
-        self.peliculachoosen['values'] = (p.GetUserNotSeenMovies())
-        # print(Predict(user,1,self.database).GetUserNotSeenMovies())
-        # moviesComboBox['values'] = (Predict(user,1,self.database).GetUserNotSeenMovies())
-        
+    def RecomCallback(self):        
+        print(int(self.peliculachoosen.get()))
+        p = Predict((int(self.id2choosen.current()) + 1),int(self.peliculachoosen.get()),self.database).GetPredict()
+        p = round(p,2)
+        print("Score:" + str(p))
+        self.predRes['text'] = ("Score:" + str(p))
+    
+    def PredictCallback(self): 
+        print("n",self.n.get())
+        print("simlim",self.simlim.get())  
+        r = Ranking((int(self.idchoosen.current()) + 1),int(self.n.get()),float(self.simlim.get()),self.database) 
+        tops = r.GetRankingBySimLimit()
+
+        print(tops)
+
+
     
     def MakeVisuals(self):
         
@@ -413,7 +424,7 @@ class Visuals():
 
         # Combobox IDusuario
         n = tk.StringVar()
-        idchoosen = ttk.Combobox(window, width = 10, textvariable = n)
+        self.idchoosen = ttk.Combobox(window, width = 10, textvariable = n)
 
 
         # label items del ranking 
@@ -422,22 +433,24 @@ class Visuals():
         		row = 3, padx =20, pady = 10)
 
         # input ranking 
-        e1 = ttk.Entry(window, width = 5)
-        e1.grid(row = 3, column = 1)
+        self.n = ttk.Entry(window, width = 5)
+        self.n.insert(-1,'5')
+        self.n.grid(row = 3, column = 1)
 
         # label umbral de similitud 
-        ttk.Label(window, text = "Unbral de similitud: ",
+        ttk.Label(window, text = "Umbral de similitud: ",
         		font = ("Times New Roman", 15)).grid(column = 2,
         		row = 3, padx =20, pady = 20)
 
 
         # input similitud 
-        e2 = ttk.Entry(window, width = 5)
-        e2.grid(row = 3, column = 3)
+        self.simlim = ttk.Entry(window, width = 5)
+        self.simlim.insert(-1,'0.75')
+        self.simlim.grid(row = 3, column = 3)
 
 
         # button recomendar 
-        tk.Button(window, text='Recomendar').grid(row=2, column=4, sticky=tk.W, pady=4)
+        tk.Button(window, command= self.PredictCallback, text='Recomendar').grid(row=2, column=4, sticky=tk.W, pady=4)
 
         # label ranking
         ttk.Label(window, text = "Ranking: ",
@@ -462,21 +475,24 @@ class Visuals():
         # Combobox Pelicula
         n = tk.StringVar()
         self.peliculachoosen = ttk.Combobox(window, width = 10, textvariable = n)
-
+        
         # button predecir 
-        tk.Button(window, text='Predecir').grid(row=5, column=4)
-
-
+        tk.Button(window, text='Predecir', command= self.RecomCallback).grid(row=5, column=4)
+        # label prediction
+        self.predRes = ttk.Label(window, text = "Score: ",
+        		font = ("Times New Roman", 15))
+        self.predRes.grid(column = 2,row = 6, padx =10, pady = 10)
+        
         # List ID usuarios combobox
-        idchoosen['values'] = (self.users)
-
-        idchoosen.grid(column = 1, row = 2)
-        idchoosen.current()
+        self.idchoosen['values'] = (self.users)
+        self.idchoosen.set(self.users[0])
+        self.idchoosen.grid(column = 1, row = 2)
+        self.idchoosen.current()
 
 
         # List ID2 usuarios combobox
         self.id2choosen['values'] = (self.users)
-
+        self.id2choosen.set(self.users[0])
         self.id2choosen.grid(column = 1, row = 5)
         self.id2choosen.current()
         self.id2choosen.bind('<<ComboboxSelected>>',self.UpdateMovieLabel) #(peliculachoosen,id2choosen.current())
@@ -489,8 +505,7 @@ class Visuals():
         self.peliculachoosen.grid(column = 1, row = 6)
         self.peliculachoosen.current()
 
-
-
+        
         window.mainloop()
 
 
@@ -536,14 +551,8 @@ def concurrentFillup(database):
             
     
 class main():    
-    database = DBTool()
-    # prediction.PrintResult()
-    
+    database = DBTool()    
     # Ranking(1,5,0.78,database).GetRankingByN()
-    
-    # p = Predict(2,1,database)
-    # print(p.GetUserNotSeenMovies())
-
     
     Visuals(database.users, database)
 
