@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+#ignore databases : find database.db at : https://we.tl/t-hHBB5Kmdgc
+*.db
+>>>>>>> 5845e4d... work
 # Default ignored files
 /shelf/
 /workspace.xml

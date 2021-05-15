@@ -1,4 +1,4 @@
-
+#database at: https://we.tl/t-hHBB5Kmdgc
 
 import sqlite3 as sq
 import csv 
@@ -38,6 +38,7 @@ class DBTool():
         
         self.GetUsers()
         self.GetMovies()
+        self.GetMoviesRatings()
         
     def ClearDb(self):
         self.cur.execute("DELETE FROM Links")
@@ -259,13 +260,8 @@ class Predict():
     #hacer una lista con todas las peliculas que el usuario ^ seleccionado no haya visto 
     def __init__(self, movieTitle):
         pass
-                       
-        
-class main():    
-    database = DBTool()
     
-    database.GetMoviesRatings()
-    # print(database.movies[189])
+def concurrentFillup(database):       
     database.movies = database.movies[190:]
     print(len(database.movies))
     cuantity = int(len(database.movies) / 4)
@@ -284,28 +280,7 @@ class main():
             print(f"thread {future} finished")
             
     
-    # for movie in database.movies:
-    #     filmAskedSim = []
-    #     print(movie)
-    #     start = time.perf_counter()
-    #     print("Calculating Similitude, please wait...")
-    #     database.Sim(movie,filmAskedSim)
-    #     end = time.perf_counter()
-        
-    #     database.cur.execute(f"CREATE TABLE sim{str(movie)} (movieId integer, sim numeric);")
-    #     database.con.commit()
-    #     database.cur.executemany(f"INSERT INTO sim{str(movie)} (movieId, sim) VALUES (?,?);",filmAskedSim)
-    #     database.con.commit()
-        
-        
-        
-        
-        
-        # filmAskedSim = filmAskedSim.sort()
-        # print(filmAskedSim)
-        # print(f"Similitud calulated in {round(end-start,2)} (sg)")
-        # with open(PATH + 'sim'+str(movie)+'.csv','w') as file: 
-        #     wr = csv.writer(file)
-        #     wr.writerow(['filmNextId','sim'])
-        #     for row in filmAskedSim:
-        #         wr.writerow(row)
+class main():    
+    database = DBTool()
+    
+    
