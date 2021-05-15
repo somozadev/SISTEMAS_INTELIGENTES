@@ -263,7 +263,7 @@ class Predict():
     def GetPredict(self):
         return self.predict
     def __init__(self, userId, movieId, database):
-        
+        start = time.perf_counter()
         self.predict = 0
         #database.ratingTable[userId-1] : all ratings for current user as list of dicts of tuples
         #database.ratingTable[userId-1][0] : first dict of tuple
@@ -302,7 +302,13 @@ class Predict():
                     botSum += filmSims[filmRelateds.index(filmId)]
                     added = True
         self.predict = topSum/botSum
-        print(self.predict)     
+        
+        database.cur.execute(f"SELECT title FROM Movies WHERE movieId == {movieId}")
+        title = database.cur.fetchall()[0][0]
+        print(f"User: {userId} \nMovie: {title} \nPrediction: {self.predict} ")     
+        end = time.perf_counter()
+        
+        print(f"\n Compute time: {end-start} (sg)")
             
         
 def concurrentFillup(database):       
@@ -326,4 +332,4 @@ def concurrentFillup(database):
     
 class main():    
     database = DBTool()
-    Predict(2,2,database).GetPredict()
+    Predict(1,2,database).GetPredict()
