@@ -1,8 +1,9 @@
-
+#database at: https://we.tl/t-hHBB5Kmdgc
 
 import sqlite3 as sq
 import csv 
 import math as m
+from sqlite3.dbapi2 import DatabaseError
 import time
 import concurrent.futures
 
@@ -38,6 +39,7 @@ class DBTool():
         
         self.GetUsers()
         self.GetMovies()
+        self.GetMoviesRatings()
         
     def ClearDb(self):
         self.cur.execute("DELETE FROM Links")
@@ -102,8 +104,7 @@ class DBTool():
         
     def GetMoviesRatings(self):
             
-        if self.Exists("Ratings_prepared") == True:   
-            return    
+         
         #gets ratings from db
         self.cur.execute("SELECT userId,movieId,rating FROM ratings")
         aux = self.cur.fetchall()
@@ -131,7 +132,10 @@ class DBTool():
                 data['movie_rating'] = group[1],group[2]
                 currentUserData.append(data.copy())
         self.ratingTable = matrix
-         
+        
+        if self.Exists("Ratings_prepared") == True:   
+            return   
+        
         #gets the media from each user rating
         userIdCounter = 1
         usersRatingsMid = []
@@ -254,18 +258,77 @@ class DBTool():
         cur.executemany(f"INSERT INTO sim{str(idSearch)} (movieId, sim) VALUES (?,?);",filmAskedSim)
         con.commit()
         return filmAskedSim
+    
 class Predict():
     #hacer una lista con todos los usuarios
     #hacer una lista con todas las peliculas que el usuario ^ seleccionado no haya visto 
-    def __init__(self, movieTitle):
-        pass
-                       
+    def GetPredict(self):
+        return self.predict
+    def PrintResult(self):
+        print(self.result)
+        print(self.timer)
+    def GetUserNotSeenMovies(self):        
+        notSeen = self.database.movies.copy()
+        for nots in self.userMoviesSeen:
+            if self.database.movies.count(nots) > 0:
+                notSeen.pop(nots)
+                
+        return notSeen        
+                    
+    def __init__(self, userId, movieId, database):
+        start = time.perf_counter()
+        self.predict = 0
+        self.userId = userId
+        self.database = database
+        self.movieId = movieId
         
-class main():    
-    database = DBTool()
-    
-    database.GetMoviesRatings()
-    # print(database.movies[189])
+        #database.ratingTable[userId-1] : all ratings for current user as list of dicts of tuples
+        #database.ratingTable[userId-1][0] : first dict of tuple
+        #list(database.ratingTable[userId-1][0].values()) : array length1 of tuple
+        #list(database.ratingTable[userId-1][0].values())[0] : tuple
+        
+        self.userMoviesSeen = []
+        usermoviesRating = []
+        for ratings in database.ratingTable[userId-1]:
+            movie,rating = list(ratings.values())[0]
+            self.userMoviesSeen.append(movie)
+            usermoviesRating.append(rating)
+        
+        filmRelateds = []
+        filmSims = []
+        database.cur.execute(f"SELECT * FROM sim{movieId}")
+        returner = database.cur.fetchall()
+        for movId,sim in returner:
+            filmRelateds.append(movId)
+            filmSims.append(sim)
+        
+        topSum = 0
+        botSum = 0
+        for filmId in filmRelateds:
+            added = False
+            for userFilmSeenId in self.userMoviesSeen:
+                if userFilmSeenId > filmId or added == True:
+                    break
+                if filmId == userFilmSeenId:
+                    topSum += usermoviesRating[self.userMoviesSeen.index(userFilmSeenId)] * filmSims[filmRelateds.index(filmId)]
+                    botSum += filmSims[filmRelateds.index(filmId)]
+                    added = True
+                    
+                elif self.userMoviesSeen[-1] == userFilmSeenId:
+                    topSum += 0
+                    botSum += filmSims[filmRelateds.index(filmId)]
+                    added = True
+        self.predict = topSum/botSum
+        
+        database.cur.execute(f"SELECT title FROM Movies WHERE movieId == {movieId}")
+        title = database.cur.fetchall()[0][0]
+        self.result = (f"User: {userId} \nMovie: {title} \nPrediction: {self.predict} ")     
+        end = time.perf_counter()
+        
+        self.timer = (f"\n Compute time: {end-start} (sg)")
+            
+        
+def concurrentFillup(database):       
     database.movies = database.movies[190:]
     print(len(database.movies))
     cuantity = int(len(database.movies) / 4)
@@ -284,28 +347,7 @@ class main():
             print(f"thread {future} finished")
             
     
-    # for movie in database.movies:
-    #     filmAskedSim = []
-    #     print(movie)
-    #     start = time.perf_counter()
-    #     print("Calculating Similitude, please wait...")
-    #     database.Sim(movie,filmAskedSim)
-    #     end = time.perf_counter()
-        
-    #     database.cur.execute(f"CREATE TABLE sim{str(movie)} (movieId integer, sim numeric);")
-    #     database.con.commit()
-    #     database.cur.executemany(f"INSERT INTO sim{str(movie)} (movieId, sim) VALUES (?,?);",filmAskedSim)
-    #     database.con.commit()
-        
-        
-        
-        
-        
-        # filmAskedSim = filmAskedSim.sort()
-        # print(filmAskedSim)
-        # print(f"Similitud calulated in {round(end-start,2)} (sg)")
-        # with open(PATH + 'sim'+str(movie)+'.csv','w') as file: 
-        #     wr = csv.writer(file)
-        #     wr.writerow(['filmNextId','sim'])
-        #     for row in filmAskedSim:
-        #         wr.writerow(row)
+class main():    
+    database = DBTool()
+    prediction = Predict(1,2,database)
+    prediction.PrintResult()
