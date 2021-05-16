@@ -456,12 +456,26 @@ class Visuals():
         ttk.Label(window, text = "Ranking: ",
         		font = ("Times New Roman", 15)).grid(column = 2,
         		row = 4, padx =10, pady = 30)
+        
+        # Set the treeeview, tabla
 
+        columns = ('#1', '#2')
+        tree = ttk.Treeview(window, columns=columns, show='headings')
+
+        tree.heading('#1', text='ID.Item')
+        tree.heading('#2', text='Prediccion')
+
+        tree.column('#1', stretch=tk.YES)
+        tree.column('#2', stretch=tk.YES)
+
+        tree.grid(row=5, column=2, sticky='nsew', padx =10, pady = 10)
+        treeview = tree
+	
 
         # label usuario2
         ttk.Label(window, text = "Selecciona un usuario: ",
         		font = ("Times New Roman", 15)).grid(column = 0,
-        		row = 5, padx =10, pady = 10)
+        		row = 7, padx =10, pady = 10)
 
         # Combobox IDusuario2
         n = tk.StringVar()
@@ -470,18 +484,18 @@ class Visuals():
         # Label Selecciona Pelicula
         ttk.Label(window, text = "Selecciona una pelicu: ",
         		font = ("Times New Roman", 15)).grid(column = 0,
-        		row = 6, padx =10, pady = 10)
+        		row = 8, padx =10, pady = 10)
 
         # Combobox Pelicula
         n = tk.StringVar()
         self.peliculachoosen = ttk.Combobox(window, width = 10, textvariable = n)
         
         # button predecir 
-        tk.Button(window, text='Predecir', command= self.RecomCallback).grid(row=5, column=4)
+        tk.Button(window, text='Predecir', command= self.RecomCallback).grid(row=7, column=2)
         # label prediction
         self.predRes = ttk.Label(window, text = "Score: ",
         		font = ("Times New Roman", 15))
-        self.predRes.grid(column = 2,row = 6, padx =10, pady = 10)
+        self.predRes.grid(column = 2,row = 7, padx =10, pady = 10)
         
         # List ID usuarios combobox
         self.idchoosen['values'] = (self.users)
@@ -493,16 +507,16 @@ class Visuals():
         # List ID2 usuarios combobox
         self.id2choosen['values'] = (self.users)
         self.id2choosen.set(self.users[0])
-        self.id2choosen.grid(column = 1, row = 5)
+        self.id2choosen.grid(column = 1, row = 7)
         self.id2choosen.current()
         self.id2choosen.bind('<<ComboboxSelected>>',self.UpdateMovieLabel) #(peliculachoosen,id2choosen.current())
 
-        
+    
         
         # List ID2 usuarios combobox
         self.peliculachoosen['values'] = ()
 
-        self.peliculachoosen.grid(column = 1, row = 6)
+        self.peliculachoosen.grid(column = 1, row = 8)
         self.peliculachoosen.current()
 
         
