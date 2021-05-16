@@ -265,32 +265,41 @@ class DBTool():
         return filmAskedSim
     
 class Ranking():
-    def __init__(self, userId, n, simLimit, database):
+    def __init__(self, userId, n, simLimit, slider, debugger, database):
         self.n = n
         self.userId = userId
         self.simLimit = simLimit
         movies = Predict(userId,1,database).GetUserNotSeenMovies()
         self.predictions = []
         self.rankTime = 0
-        for movie in movies[:20]:
+        for movie in movies[:slider]:
             pred = Predict(userId,movie,database)
+            debugger['text'] = f"{movies.index(movie)}/{slider}"
+            debugger.update()
             print(f"{movies.index(movie)}/{len(movies)} with {pred.PrintTimer()}")
             self.predictions.append((movie,pred.GetPredict()))
             self.rankTime+=pred.GetValueTimer()
+        self.GetRankingBySimLimit()
+        self.Sort()
         
     def Sort(self):
+        print("pre",self.predictions)
         self.predictions = sorted(self.predictions, key=lambda x: x[1])
+        self.predictions.reverse()
+        print("post",self.predictions)
     def GetRankTime(self):
         return self.rankTime
     def GetRankingByN(self):
-        self.Sort()
         return self.predictions[:self.n]
     def GetRankingBySimLimit(self):
-        for movie,ranked in self.predictions:
+        aux = self.predictions.copy()
+        for movie,ranked in aux:
             if ranked < self.simLimit * 5: #si el umbral es .75 y la nota max es 5 : ranked debe valer al menos 3.75
                 self.predictions.remove((movie,ranked)) 
-        return self.GetRankingByN()
-        
+
+            
+        # return self.GetRankingByN()
+            
 class Predict():
     def GetPredict(self):
         return self.predict
@@ -398,11 +407,10 @@ class Visuals():
         self.treeview.delete(*self.treeview.get_children())
         print("n",self.n.get())
         print("simlim",self.simlim.get())  
-        r = Ranking((int(self.idchoosen.current()) + 1),int(self.n.get()),float(self.simlim.get()),self.database)
-        tops = r.GetRankingBySimLimit()
-        tops = sorted(tops, key=lambda x: x[1])
-
-        tops.reverse()
+        self.debugger['text'] = ">> Calculating..."
+        r = Ranking((int(self.idchoosen.current()) + 1),int(self.n.get()),float(self.simlim.get()),int(self.slider.get()),self.debugger,self.database)
+        tops = r.GetRankingByN()
+        
         for top in tops: 
             self.treeview.insert('', 'end',values=( str(top[0]) , str(top[1]) ))
 
@@ -413,7 +421,7 @@ class Visuals():
         
         window = tk.Tk()
         window.title('Mi Recomendador')
-        window.geometry('900x600')
+        window.geometry('900x650')
 
 
         # label text for title
@@ -456,11 +464,17 @@ class Visuals():
 
         # button recomendar 
         tk.Button(window, command= self.PredictCallback, text='Recomendar').grid(row=2, column=4, sticky=tk.W, pady=4)
+        
+        self.slider = tk.Scale(window, width= 20,length=300, from_=0, to=9510, orient=HORIZONTAL)
+        self.slider.grid(row=4,column=2)
+        self.debugger = ttk.Label(window, text = ">> ", font = ("Times New Roman", 15))
+        self.debugger.grid(column = 0, row = 4, padx =20, pady = 10)
 
+        
         # label ranking
         ttk.Label(window, text = "Ranking: ",
         		font = ("Times New Roman", 15)).grid(column = 2,
-        		row = 4, padx =10, pady = 30)
+        		row = 5, padx =10, pady = 30)
         
         # Set the treeeview, tabla
 
@@ -473,7 +487,7 @@ class Visuals():
         tree.column('#1', stretch=tk.YES)
         tree.column('#2', stretch=tk.YES)
 
-        tree.grid(row=5, column=2, sticky='nsew', padx =10, pady = 10)
+        tree.grid(row=6, column=2, sticky='nsew', padx =10, pady = 10)
         self.treeview = tree
         
         
