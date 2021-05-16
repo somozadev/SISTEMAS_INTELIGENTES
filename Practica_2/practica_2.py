@@ -1,4 +1,4 @@
-#database at: https://we.tl/t-hHBB5Kmdgc
+#database at: https://we.tl/t-BCPGggIkuw
 
 import sqlite3 as sq
 import csv 
@@ -272,7 +272,7 @@ class Ranking():
         movies = Predict(userId,1,database).GetUserNotSeenMovies()
         self.predictions = []
         self.rankTime = 0
-        for movie in movies:
+        for movie in movies[:20]:
             pred = Predict(userId,movie,database)
             print(f"{movies.index(movie)}/{len(movies)} with {pred.PrintTimer()}")
             self.predictions.append((movie,pred.GetPredict()))
@@ -395,12 +395,17 @@ class Visuals():
         self.predRes['text'] = ("Score:" + str(p))
     
     def PredictCallback(self): 
+        self.treeview.delete(*self.treeview.get_children())
         print("n",self.n.get())
         print("simlim",self.simlim.get())  
-        r = Ranking((int(self.idchoosen.current()) + 1),int(self.n.get()),float(self.simlim.get()),self.database) 
+        r = Ranking((int(self.idchoosen.current()) + 1),int(self.n.get()),float(self.simlim.get()),self.database)
         tops = r.GetRankingBySimLimit()
+        tops = sorted(tops, key=lambda x: x[1])
 
-        print(tops)
+        tops.reverse()
+        for top in tops: 
+            self.treeview.insert('', 'end',values=( str(top[0]) , str(top[1]) ))
+
 
 
     
@@ -408,7 +413,7 @@ class Visuals():
         
         window = tk.Tk()
         window.title('Mi Recomendador')
-        window.geometry('730x700')
+        window.geometry('900x600')
 
 
         # label text for title
@@ -469,9 +474,15 @@ class Visuals():
         tree.column('#2', stretch=tk.YES)
 
         tree.grid(row=5, column=2, sticky='nsew', padx =10, pady = 10)
-        treeview = tree
-	
-
+        self.treeview = tree
+        
+        
+        
+        
+        
+        
+        
+        
         # label usuario2
         ttk.Label(window, text = "Selecciona un usuario: ",
         		font = ("Times New Roman", 15)).grid(column = 0,
@@ -482,7 +493,7 @@ class Visuals():
         self.id2choosen = ttk.Combobox(window, width = 10, textvariable = n)
 
         # Label Selecciona Pelicula
-        ttk.Label(window, text = "Selecciona una pelicu: ",
+        ttk.Label(window, text = "Selecciona una pelicula: ",
         		font = ("Times New Roman", 15)).grid(column = 0,
         		row = 8, padx =10, pady = 10)
 
@@ -491,7 +502,7 @@ class Visuals():
         self.peliculachoosen = ttk.Combobox(window, width = 10, textvariable = n)
         
         # button predecir 
-        tk.Button(window, text='Predecir', command= self.RecomCallback).grid(row=7, column=2)
+        tk.Button(window, text='Predecir', command= self.RecomCallback).grid(row=7, column=3)
         # label prediction
         self.predRes = ttk.Label(window, text = "Score: ",
         		font = ("Times New Roman", 15))
