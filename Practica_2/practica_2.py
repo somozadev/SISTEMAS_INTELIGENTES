@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 import sqlite3
+from tkinter import font
 from types import prepare_class
 
 
@@ -421,58 +422,69 @@ class Visuals():
         
         window = tk.Tk()
         window.title('Mi Recomendador')
-        window.geometry('900x650')
-
-
+        window.geometry('1000x680')
+        style = ttk.Style(window)
+        style.theme_use("clam")
+        main_color = "#23262C"
+        text_color = "#FFFFFF"
+        label_color = "#3C3F46"#"#596B90"
+        
+        window.config(bg=main_color)
+        
+        
         # label text for title
-        ttk.Label(window, text = "RECOMENDACIONES",
-                background = 'green', font = ("Times New Roman", 15, UNDERLINE)).grid(column = 0, row = 1, 
+        labl = ttk.Label(window, text = "RECOMENDACIONES",foreground=text_color,
+                background = main_color, font = ("Times New Roman", 15, UNDERLINE))
+        labl.grid(column = 0, row = 1, 
                 padx =10, pady = 10)
 
-
         # label usuario
-        ttk.Label(window, text = "Selecciona un usuario: ",
+        ttk.Label(window, text = "Selecciona un usuario: ",foreground=text_color,
+                background = main_color,
         		font = ("Times New Roman", 15)).grid(column = 0,
         		row = 2, padx =10, pady = 10)
 
         # Combobox IDusuario
         n = tk.StringVar()
-        self.idchoosen = ttk.Combobox(window, width = 10, textvariable = n)
+        self.idchoosen = ttk.Combobox(window,font = ("Times New Roman", 15), width = 10, textvariable = n)
 
 
         # label items del ranking 
-        ttk.Label(window, text = "Items del ranking: ",
+        ttk.Label(window, text = "Items del ranking: ",foreground=text_color,
+                background = main_color,
         		font = ("Times New Roman", 15)).grid(column = 0,
         		row = 3, padx =20, pady = 10)
 
         # input ranking 
-        self.n = ttk.Entry(window, width = 5)
+        self.n = ttk.Entry(window, foreground=main_color,background=label_color,font = ("Times New Roman", 15), width = 5)
         self.n.insert(-1,'5')
         self.n.grid(row = 3, column = 1)
 
         # label umbral de similitud 
-        ttk.Label(window, text = "Umbral de similitud: ",
+        ttk.Label(window, text = "Umbral de similitud: ",foreground=text_color,
+                background = main_color,
         		font = ("Times New Roman", 15)).grid(column = 2,
         		row = 3, padx =20, pady = 20)
 
 
         # input similitud 
-        self.simlim = ttk.Entry(window, width = 5)
+        self.simlim = ttk.Entry(window, foreground=main_color,background=label_color,font = ("Times New Roman", 15),width = 5)
         self.simlim.insert(-1,'0.75')
         self.simlim.grid(row = 3, column = 3)
 
-
         # button recomendar 
-        tk.Button(window, command= self.PredictCallback, text='Recomendar').grid(row=2, column=4, sticky=tk.W, pady=4)
+        tk.Button(window,font=("Times New Roman",20),foreground=text_color, background=label_color, command= self.PredictCallback, text='Recomendar').grid(row=2, column=4, sticky=tk.W, pady=4)
         
-        self.slider = tk.Scale(window, width= 20,length=300, from_=0, to=9510, orient=HORIZONTAL)
+        self.slider = tk.Scale(window,font=("Times New Roman",15),background=label_color,foreground=text_color, width= 20,length=300, from_=0, to=9510, orient=HORIZONTAL)
         self.slider.grid(row=4,column=2)
-        self.debugger = ttk.Label(window, text = ">> ", font = ("Times New Roman", 15))
+        self.debugger = ttk.Label(window,foreground=text_color,
+                background = main_color, text = ">> ", font = ("Times New Roman", 15))
         self.debugger.grid(column = 0, row = 4, padx =20, pady = 10)
 
         
         # label ranking
-        ttk.Label(window, text = "Ranking: ",
+        ttk.Label(window, text = "Ranking: ",foreground=text_color,
+                background = main_color,
         		font = ("Times New Roman", 15)).grid(column = 2,
         		row = 5, padx =10, pady = 30)
         
@@ -490,35 +502,37 @@ class Visuals():
         tree.grid(row=6, column=2, sticky='nsew', padx =10, pady = 10)
         self.treeview = tree
         
-        
-        
-        
+        style.configure("Treeview", background=main_color, 
+                fieldbackground=label_color,font = ("Times New Roman", 15), foreground=text_color)
         
         
         
         
         # label usuario2
-        ttk.Label(window, text = "Selecciona un usuario: ",
+        ttk.Label(window, text = "Selecciona un usuario: ",foreground=text_color,
+                background = main_color,
         		font = ("Times New Roman", 15)).grid(column = 0,
         		row = 7, padx =10, pady = 10)
 
         # Combobox IDusuario2
         n = tk.StringVar()
-        self.id2choosen = ttk.Combobox(window, width = 10, textvariable = n)
+        self.id2choosen = ttk.Combobox(window,font = ("Times New Roman", 15), width = 10, textvariable = n)
 
         # Label Selecciona Pelicula
-        ttk.Label(window, text = "Selecciona una pelicula: ",
+        ttk.Label(window, text = "Selecciona una pelicula: ",foreground=text_color,
+                background = main_color,
         		font = ("Times New Roman", 15)).grid(column = 0,
         		row = 8, padx =10, pady = 10)
 
         # Combobox Pelicula
         n = tk.StringVar()
-        self.peliculachoosen = ttk.Combobox(window, width = 10, textvariable = n)
+        self.peliculachoosen = ttk.Combobox(window,font = ("Times New Roman", 15), width = 10, textvariable = n)
         
         # button predecir 
-        tk.Button(window, text='Predecir', command= self.RecomCallback).grid(row=7, column=3)
+        tk.Button(window, text='Predecir',font=("Times New Roman",20),background=label_color,foreground=text_color, command= self.RecomCallback).grid(row=7, column=4)
         # label prediction
-        self.predRes = ttk.Label(window, text = "Score: ",
+        self.predRes = ttk.Label(window, text = "Score: ",foreground=text_color,
+                background = main_color,
         		font = ("Times New Roman", 15))
         self.predRes.grid(column = 2,row = 7, padx =10, pady = 10)
         
