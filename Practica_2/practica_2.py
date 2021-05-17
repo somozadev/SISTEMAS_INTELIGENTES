@@ -403,6 +403,15 @@ class Visuals():
         p = round(p,2)
         print("Score:" + str(p))
         self.predRes['text'] = ("Score:" + str(p))
+        
+        self.database.cur.execute(f"SELECT title FROM Movies WHERE movieId == {int(self.peliculachoosen.get())}")
+        aux = self.database.cur.fetchall()
+        title = str(aux[0]).replace('(','')
+        title = title.replace(',','')
+        title = title.replace(')','')
+        self.movieName['text'] = (title)
+
+    
     
     def PredictCallback(self): 
         self.treeview.delete(*self.treeview.get_children())
@@ -535,6 +544,11 @@ class Visuals():
                 background = main_color,
         		font = ("Times New Roman", 15))
         self.predRes.grid(column = 2,row = 7, padx =10, pady = 10)
+        
+        self.movieName = ttk.Label(window, text ="",foreground=text_color, background=main_color, font = ("Times New Roman", 15))
+        self.movieName.grid(column = 2,row = 8, padx =10, pady = 10)
+        
+        
         
         # List ID usuarios combobox
         self.idchoosen['values'] = (self.users)
